@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":dependencyDashboard", ":semanticCommitTypeAll(chore)"],
+  "timezone": "Europe/Amsterdam",
+  "schedule": ["before 06:00 on monday"],
+  "lockFileMaintenance": { "enabled": true },
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "Group all @bdi/* workspace-internal dependencies (never opened as Renovate PRs).",
+      "matchPackagePatterns": ["^@bdi/"],
+      "enabled": false
+    },
+    {
+      "description": "Bun version pinned across workspaces; bump via a single PR.",
+      "matchPackageNames": ["oven-sh/setup-bun", "bun"],
+      "groupName": "bun toolchain"
+    },
+    {
+      "description": "TypeScript + Biome: group so cross-dep updates land together.",
+      "matchPackageNames": ["typescript", "@biomejs/biome"],
+      "groupName": "typescript + biome"
+    },
+    {
+      "description": "GitHub Actions core images.",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    },
+    {
+      "description": "Never bump Postgres/Valkey majors without an operator sign-off.",
+      "matchPackageNames": ["postgres", "valkey/valkey"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": { "enabled": true, "labels": ["security"] },
+  "osvVulnerabilityAlerts": true,
+  "major": { "dependencyDashboardApproval": true }
+}

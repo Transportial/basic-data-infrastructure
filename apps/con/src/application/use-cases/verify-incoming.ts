@@ -3,6 +3,7 @@
 
 import { err, ok, type Result } from '@bdi/kernel';
 import type { BvadClaims, BvodClaims } from '@bdi/contracts';
+import { verifyX5cChain, computeCertThumbprintSha256 } from '@bdi/crypto';
 import {
   validateBvadTiming,
   validateBvodTiming,
@@ -22,6 +23,8 @@ export type VerifyIncomingError =
   | { type: 'bvod-missing' }
   | { type: 'bvod-invalid' }
   | { type: 'bvod-rejected'; reason: ValidationError['type'] }
+  | { type: 'x5c-chain-invalid'; reason: string }
+  | { type: 'x5c-thumbprint-mismatch' }
   | { type: 'policy-denied'; reason: string };
 
 export interface VerifyIncomingInput {
@@ -42,6 +45,8 @@ export interface VerifyIncomingConfig {
   readonly ownConnectorId: string;
   readonly associationId: string;
   readonly audience: string;
+  readonly trustedCaSpkiHashes?: ReadonlySet<string>;
+  readonly requireX5c?: boolean;
 }
 
 export class VerifyIncomingUseCase {
@@ -69,6 +74,27 @@ export class VerifyIncomingUseCase {
       expectedAssociation: this.config.associationId,
     });
     if (!bvadCheck.ok) return err({ type: 'bvad-rejected', reason: bvadCheck.error.type });
+
+    // x5c header (optional unless requireX5c=true): validate the supplied chain
+    // terminates at a trusted anchor and the leaf's SHA-256 matches the BVAD
+    // connector-claim thumbprint.
+    const bvadHeader = this.extractHeader(input.bvad);
+    const x5c = bvadHeader?.x5c;
+    if (this.config.requireX5c && (!x5c || x5c.length === 0)) {
+      return err({ type: 'x5c-chain-invalid', reason: 'missing' });
+    }
+    if (x5c && x5c.length > 0) {
+      const trusted = this.config.trustedCaSpkiHashes;
+      if (trusted && trusted.size > 0) {
+        const chainError = await verifyX5cChain(x5c, { trustedSpkiSha256: trusted });
+        if (chainError) return err({ type: 'x5c-chain-invalid', reason: chainError.type });
+      }
+      const leafThumb = await computeCertThumbprintSha256(x5c[0]!);
+      const expected = bvad['https://bdi.nl/claims/connector'].x5t_s256;
+      if (leafThumb !== expected) {
+        return err({ type: 'x5c-thumbprint-mismatch' });
+      }
+    }
 
     const bvod = await this.orsTrust.verifyBvod(input.bvod);
     if (!bvod) return err({ type: 'bvod-invalid' });
@@ -103,5 +129,18 @@ export class VerifyIncomingUseCase {
       return err({ type: 'policy-denied', reason: decision.reason });
     }
     return ok({ bvad, bvod });
+  }
+
+  private extractHeader(compact: string): { x5c?: string[] } | null {
+    try {
+      const [headerB64] = compact.split('.', 1);
+      if (!headerB64) return null;
+      const normalised = headerB64.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalised + '==='.slice((normalised.length + 3) % 4);
+      const json = JSON.parse(atob(padded)) as { x5c?: string[] };
+      return json;
+    } catch {
+      return null;
+    }
   }
 }

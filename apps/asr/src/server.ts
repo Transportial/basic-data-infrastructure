@@ -33,7 +33,9 @@ export async function createServer(options: ServerOptions): Promise<AsrServer> {
         if (!out) {
           return new Response('malformed-request', { status: 400 });
         }
-        return new Response(out.der, {
+        const respBuf = new ArrayBuffer(out.der.byteLength);
+        new Uint8Array(respBuf).set(out.der);
+        return new Response(respBuf, {
           status: 200,
           headers: { 'content-type': out.contentType },
         });

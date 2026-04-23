@@ -13,10 +13,12 @@ export interface Job {
   run(now: Date): Promise<void>;
 }
 
+export type TimerHandle = ReturnType<typeof setTimeout> | number;
+
 export interface SchedulerOptions {
   readonly now?: () => number;
-  readonly setTimer?: (cb: () => void, ms: number) => ReturnType<typeof setTimeout>;
-  readonly clearTimer?: (id: ReturnType<typeof setTimeout>) => void;
+  readonly setTimer?: (cb: () => void, ms: number) => TimerHandle;
+  readonly clearTimer?: (id: TimerHandle) => void;
 }
 
 export interface RunResult {
@@ -29,7 +31,7 @@ export interface RunResult {
 
 export class Scheduler {
   private readonly jobs = new Map<string, Job>();
-  private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly timers = new Map<string, TimerHandle>();
   readonly history: RunResult[] = [];
   private running = false;
 
@@ -50,7 +52,11 @@ export class Scheduler {
   stop(): void {
     this.running = false;
     for (const [, timer] of this.timers) {
-      (this.options.clearTimer ?? clearTimeout)(timer);
+      if (this.options.clearTimer) {
+        this.options.clearTimer(timer);
+      } else {
+        clearTimeout(timer as Parameters<typeof clearTimeout>[0]);
+      }
     }
     this.timers.clear();
   }

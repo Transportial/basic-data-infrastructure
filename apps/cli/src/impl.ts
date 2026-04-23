@@ -206,6 +206,117 @@ export const addConnectorId: Command = {
   },
 };
 
+export const revokeCert: Command = {
+  name: 'revoke-cert',
+  description: 'Revoke a certificate via the ASR ACME revoke endpoint.',
+  usage: 'bdi revoke-cert --asr <url> --serial <hex> [--reason <int>] [--eab-kid <k>] [--eab-secret <b64>]',
+  async execute(args, io) {
+    const ctx = io as CliContext;
+    const asr = requireFlag(args, 'asr');
+    const serial = requireFlag(args, 'serial');
+    if (!asr || !serial) {
+      io.stderr(this.usage);
+      return 2;
+    }
+    const reason = requireFlag(args, 'reason');
+    const body = {
+      serial,
+      ...(reason !== null && reason !== undefined ? { reason: Number(reason) } : {}),
+    };
+    const res = await httpJson(ctx, 'POST', `${asr}/acme/revoke-cert`, body);
+    io.stdout(JSON.stringify(res.data));
+    return res.status === 200 ? 0 : 1;
+  },
+};
+
+export const rotateKey: Command = {
+  name: 'rotate-key',
+  description: 'Trigger an out-of-band key rotation (promotes "next" to "active" in the ASR keystore).',
+  usage: 'bdi rotate-key --asr <url>',
+  async execute(args, io) {
+    const ctx = io as CliContext;
+    const asr = requireFlag(args, 'asr');
+    if (!asr) {
+      io.stderr(this.usage);
+      return 2;
+    }
+    const res = await httpJson(ctx, 'POST', `${asr}/admin/keys/rotate`);
+    io.stdout(JSON.stringify(res.data));
+    return res.status === 200 ? 0 : 1;
+  },
+};
+
+export const trustlistPublish: Command = {
+  name: 'trustlist-publish',
+  description: 'Fetch and print the currently-signed trustlist for an association.',
+  usage: 'bdi trustlist-publish --asr <url> --association-id <id>',
+  async execute(args, io) {
+    const ctx = io as CliContext;
+    const asr = requireFlag(args, 'asr');
+    const assoc = requireFlag(args, 'association-id');
+    if (!asr || !assoc) {
+      io.stderr(this.usage);
+      return 2;
+    }
+    const res = await ctx.fetch(`${asr}/.well-known/bdi/trustlist/${assoc}`, { method: 'GET' });
+    const body = await res.text();
+    io.stdout(body);
+    return res.status === 200 ? 0 : 1;
+  },
+};
+
+export const federationAdd: Command = {
+  name: 'federation-add-peer',
+  description: 'Register a peer association in the ASR federation registry.',
+  usage:
+    'bdi federation-add-peer --asr <url> --peer-issuer <url> --peer-association-id <id> --peer-kid <kid> --peer-jwk <jwk-file> [--allow true|false]',
+  async execute(args, io) {
+    const ctx = io as CliContext;
+    const asr = requireFlag(args, 'asr');
+    const peerIssuer = requireFlag(args, 'peer-issuer');
+    const peerAssoc = requireFlag(args, 'peer-association-id');
+    const peerKid = requireFlag(args, 'peer-kid');
+    const peerJwkFile = requireFlag(args, 'peer-jwk');
+    if (!asr || !peerIssuer || !peerAssoc || !peerKid || !peerJwkFile) {
+      io.stderr(this.usage);
+      return 2;
+    }
+    const allow = requireFlag(args, 'allow') !== 'false';
+    const peerJwk = JSON.parse(io.readFileString(peerJwkFile));
+    const res = await httpJson(ctx, 'POST', `${asr}/admin/federation/peers`, {
+      peer_issuer: peerIssuer,
+      peer_association_id: peerAssoc,
+      peer_kid: peerKid,
+      peer_jwk: peerJwk,
+      allow,
+    });
+    io.stdout(JSON.stringify(res.data));
+    return res.status === 201 || res.status === 200 ? 0 : 1;
+  },
+};
+
+export const connectorShow: Command = {
+  name: 'connector-show',
+  description: 'Look up a connector by id or client_id.',
+  usage: 'bdi connector-show --asr <url> (--id <urn> | --client-id <id>)',
+  async execute(args, io) {
+    const ctx = io as CliContext;
+    const asr = requireFlag(args, 'asr');
+    const id = requireFlag(args, 'id');
+    const clientId = requireFlag(args, 'client-id');
+    if (!asr || (!id && !clientId)) {
+      io.stderr(this.usage);
+      return 2;
+    }
+    const url = id
+      ? `${asr}/admin/connectors/${encodeURIComponent(id)}`
+      : `${asr}/admin/connectors?client_id=${encodeURIComponent(clientId!)}`;
+    const res = await httpJson(ctx, 'GET', url);
+    io.stdout(JSON.stringify(res.data));
+    return res.status === 200 ? 0 : 1;
+  },
+};
+
 export const ALL_COMMANDS: ReadonlyArray<Command> = [
   registerMember,
   runVerifications,
@@ -214,6 +325,11 @@ export const ALL_COMMANDS: ReadonlyArray<Command> = [
   generateKey,
   createChainContext,
   addConnectorId,
+  revokeCert,
+  rotateKey,
+  trustlistPublish,
+  federationAdd,
+  connectorShow,
 ];
 
 function requireFlag(args: ParsedArgs, name: string): string | null {

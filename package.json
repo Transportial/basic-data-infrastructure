@@ -15,9 +15,11 @@
     "test:coverage": "bun test --coverage",
     "typecheck": "bun run --filter='*' typecheck",
     "lint": "bun run --filter='*' lint",
-    "clean": "rm -rf apps/*/dist packages/*/dist node_modules/.cache"
+    "clean": "rm -rf apps/*/dist packages/*/dist node_modules/.cache",
+    "openapi:generate": "bun run scripts/generate-openapi.ts"
   },
   "devDependencies": {
+    "@bdi/openapi": "workspace:*",
     "@types/bun": "^1.2.0",
     "typescript": "^5.7.2"
   },

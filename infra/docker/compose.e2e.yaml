@@ -1,0 +1,87 @@
+name: bdi-e2e
+# Minimal stack used by the repo-level end-to-end tests. No portals, no
+# Keycloak/Grafana, just the three services + Postgres/Valkey wired to a
+# shared network. Images are built fresh from source so the e2e suite always
+# exercises the tree under test.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bdi
+      POSTGRES_PASSWORD: bdi
+      POSTGRES_MULTIPLE_DATABASES: asr_db,ors_db,con_db
+    volumes:
+      - ./init-multi-db.sh:/docker-entrypoint-initdb.d/10-multi-db.sh:ro
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bdi"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: valkey-server --save "" --appendonly no
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 2s
+
+  asr:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.bun
+      args: { APP: asr }
+    environment:
+      PORT: 8080
+      ASR_ISSUER: http://asr:8080
+      DATABASE_URL: postgres://bdi:bdi@postgres/asr_db
+      VALKEY_URL: redis://valkey:6379
+      LOG_LEVEL: warn
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/health/ready"]
+      interval: 2s
+
+  ors:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.bun
+      args: { APP: ors }
+    environment:
+      PORT: 8080
+      ASR_ISSUER: http://asr:8080
+      ORS_ISSUER: http://ors:8080
+      DATABASE_URL: postgres://bdi:bdi@postgres/ors_db
+      VALKEY_URL: redis://valkey:6379
+      LOG_LEVEL: warn
+    depends_on:
+      asr: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/health/ready"]
+      interval: 2s
+
+  con:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.bun
+      args: { APP: con }
+    environment:
+      PORT: 8443
+      ASR_ISSUER: http://asr:8080
+      ORS_ISSUER: http://ors:8080
+      ASSOCIATION_ID: ctn
+      CONNECTOR_ID: urn:bdi:connector:00000000-0000-4000-8000-000000000001
+      CON_AUDIENCE: urn:bdi:connector:00000000-0000-4000-8000-000000000001
+      VALKEY_URL: redis://valkey:6379
+      LOG_LEVEL: warn
+    depends_on:
+      asr: { condition: service_healthy }
+      ors: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8443/health/ready"]
+      interval: 2s
