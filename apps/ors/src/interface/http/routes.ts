@@ -179,7 +179,13 @@ export function buildRouter(deps: RouterDeps): Router {
     const id = parseChainContextId(req.params.id!);
     const body = (req.body as Record<string, unknown> | null) ?? {};
     const actor = parseEuid(String(body.actor ?? ''));
-    const organisation = parseEuid(String(body.organisation_euid ?? actor.ok ? actor.value : ''));
+    const rawOrg =
+      typeof body.organisation_euid === 'string' && body.organisation_euid
+        ? body.organisation_euid
+        : actor.ok
+          ? actor.value
+          : '';
+    const organisation = parseEuid(rawOrg);
     const personRef = typeof body.person_ref === 'string' ? body.person_ref : null;
     const role = typeof body.role === 'string' ? body.role : null;
     if (!id.ok || !actor.ok || !organisation.ok || !personRef || !role) {

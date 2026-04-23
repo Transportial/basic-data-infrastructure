@@ -45,19 +45,24 @@ See [docs/SETUP.md](docs/SETUP.md) for detailed environment setup, and
 ├── apps/                 # Deployable services
 │   ├── asr/              # Associatie Register
 │   ├── ors/              # Orkestratie Register
-│   └── con/              # Connector
+│   ├── con/              # Connector
+│   ├── cli/              # Admin CLI (bdi register-member, approve, ...)
+│   └── asr-portal-admin/ # React + Vite admin portal
 ├── packages/             # Shared libraries
 │   ├── kernel/           # Pure domain primitives (EUPL 1.2)
 │   ├── contracts/        # Wire-format schemas (EUPL 1.2 / Apache 2.0)
-│   ├── crypto/           # BDI JWS profile, signers, trustlist resolver
+│   ├── crypto/           # BDI JWS profile, RFC 7523 verifier, key generation
+│   ├── crypto-ca/        # RFC 8555 ACME server + client, CSR parser, X.509 issuer
 │   ├── config/           # Strict env parsing
-│   ├── events/           # Typed event producer/consumer
+│   ├── events/           # Typed events + Valkey Streams emulator + rate limiter
 │   ├── policy/           # PDP interface + embedded Cedar-like engine
-│   ├── observability/    # Structured logs, metrics, trace context
+│   ├── observability/    # Structured logs, metrics, trace ctx, OTLP exporter
+│   ├── openapi/          # OpenAPI 3.1 document builder
 │   └── testing/          # Test fixtures and fakes
 ├── infra/
-│   ├── docker/           # Dockerfiles + Compose
-│   └── helm/             # Helm chart skeletons
+│   ├── docker/           # Dockerfiles + Compose (Postgres, Valkey, Keycloak,
+│   │                     #   Jaeger, Prometheus, Grafana, portal)
+│   └── helm/             # Helm charts (asr, ors, con, bdi-platform umbrella)
 └── docs/                 # Architecture, contributing, setup, ADRs
 ```
 

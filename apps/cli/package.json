@@ -1,0 +1,28 @@
+{
+  "name": "@bdi/cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Admin CLI for BDI services (add-member, approve, register-connector, rotate-key, issue-certificate, ...)",
+  "license": "EUPL-1.2",
+  "type": "module",
+  "bin": {
+    "bdi": "./src/main.ts"
+  },
+  "scripts": {
+    "build": "bun build ./src/main.ts --outdir ./dist --target bun",
+    "start": "bun run ./src/main.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bdi/asr": "workspace:*",
+    "@bdi/ors": "workspace:*",
+    "@bdi/crypto": "workspace:*",
+    "@bdi/crypto-ca": "workspace:*",
+    "@bdi/kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

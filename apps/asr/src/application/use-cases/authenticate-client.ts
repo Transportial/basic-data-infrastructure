@@ -58,7 +58,7 @@ export class AuthenticateClientUseCase {
     if (!connector) return err({ type: 'unknown-client' });
     if (connector.status !== 'active') return err({ type: 'connector-not-active' });
 
-    const verified = await verifyClientAssertion(input.clientAssertion, connector.jwk as Jwk, {
+    const verified = await verifyClientAssertion(input.clientAssertion, connector.jwk as unknown as Jwk, {
       clientId: input.clientId,
       expectedAudience: input.expectedAudience,
       now: this.clock.nowUnix(),

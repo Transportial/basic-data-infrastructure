@@ -1,0 +1,14 @@
+apiVersion: v2
+name: bdi-asr
+description: BDI Associatie Register reference deployment chart
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - bdi
+  - associatie-register
+  - identity
+home: https://connekt.nl/bdi
+maintainers:
+  - name: Stichting Connekt
+    email: ops@connekt.nl

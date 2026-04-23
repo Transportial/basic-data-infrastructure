@@ -9,7 +9,6 @@ import {
   concat,
   explicit,
   generalizedTime,
-  ia5,
   implicit,
   integer,
   nullValue,
@@ -99,7 +98,8 @@ export function attachSignature(
 
 function algorithmIdentifier(algOid: string): Uint8Array {
   // For EC/Ed25519 there are no parameters; for RSA we emit NULL params.
-  const needsNullParams = [OID.sha256WithRSAEncryption, OID.rsaEncryption].includes(algOid);
+  const needsNullParams =
+    algOid === OID.sha256WithRSAEncryption || algOid === OID.rsaEncryption;
   return needsNullParams ? sequence(oid(algOid), nullValue()) : sequence(oid(algOid));
 }
 

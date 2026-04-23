@@ -1,0 +1,6 @@
+bdi-asr:
+  enabled: true
+bdi-ors:
+  enabled: true
+bdi-con:
+  enabled: false

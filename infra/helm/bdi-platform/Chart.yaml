@@ -1,0 +1,17 @@
+apiVersion: v2
+name: bdi-platform
+description: Umbrella chart bundling ASR, ORS, and optional CON for a single associatie.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: bdi-asr
+    version: 0.1.0
+    repository: "file://../asr"
+  - name: bdi-ors
+    version: 0.1.0
+    repository: "file://../ors"
+  - name: bdi-con
+    version: 0.1.0
+    repository: "file://../con"
+    condition: bdi-con.enabled

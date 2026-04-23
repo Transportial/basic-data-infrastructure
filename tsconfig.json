@@ -1,4 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
-  "include": ["apps/*/src/**/*", "packages/*/src/**/*"]
+  "include": ["apps/*/src/**/*", "packages/*/src/**/*"],
+  "exclude": [
+    "apps/asr-portal-admin/**",
+    "apps/asr-portal-user/**",
+    "apps/ors-portal-admin/**",
+    "node_modules",
+    "dist"
+  ]
 }

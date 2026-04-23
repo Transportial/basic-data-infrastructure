@@ -8,7 +8,7 @@ import {
   validatePublicJwk,
   type Jwk,
 } from '@bdi/kernel';
-import { compactVerify, InMemoryTrustlist, JwkSigner } from '@bdi/crypto';
+import { InMemoryTrustlist, JwkSigner } from '@bdi/crypto';
 import type {
   AcmeServices,
 } from './server.ts';
@@ -157,13 +157,13 @@ export function buildAcmeHttp(services: AcmeServices): AcmeHttp {
 
     const input = {
       jwk: header.jwk,
-      contact: body.contact,
       termsOfServiceAgreed: !!body.termsOfServiceAgreed,
       externalAccountBinding: {
         protected: eabProtected,
         payload: body.externalAccountBinding.payload,
         signature: body.externalAccountBinding.signature,
       },
+      ...(body.contact !== undefined ? { contact: body.contact } : {}),
     };
     const r = await newAccount.execute(input);
     if (!r.ok) {

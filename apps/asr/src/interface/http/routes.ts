@@ -144,7 +144,7 @@ export function buildRouter(deps: RouterDeps): Router {
       const r = await deps.tokenExchange.execute({
         subjectToken: typeof body?.subject_token === 'string' ? body.subject_token : '',
         audience: typeof body?.audience === 'string' ? body.audience : '',
-        scope: typeof body?.scope === 'string' ? body.scope : undefined,
+        ...(typeof body?.scope === 'string' ? { scope: body.scope } : {}),
       });
       if (!r.ok) return json(400, { error: 'invalid_request', error_description: r.error.type });
       return json(200, {

@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: asr
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["asr:8080"]
+  - job_name: ors
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["ors:8080"]
+  - job_name: con
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["con:8443"]
