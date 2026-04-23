@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import { err, ok, type Result } from '@bdi/kernel';
 import type { AssuranceLevel, Member, MemberStatus, VerificationResult } from './member.ts';

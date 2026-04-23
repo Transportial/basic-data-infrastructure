@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2 AND Apache-2.0
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 export * from './validator.ts';
 export * from './tokens/bvad.ts';

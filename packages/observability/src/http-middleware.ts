@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Counter, Histogram, MetricsRegistry } from './metrics.ts';

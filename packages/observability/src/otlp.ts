@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import type { Counter, Histogram, MetricsRegistry } from './metrics.ts';
 import type { TraceContext } from './trace.ts';

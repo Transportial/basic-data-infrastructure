@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Static-site generator for the BDI documentation at docs/site/.
 // Reads:
@@ -89,7 +89,7 @@ function header(activeHref: string, depth: number): string {
 
 function footer(): string {
   return `<footer class="site-footer">
-    <span>EUPL 1.2 · Stichting Connekt &amp; contributors · <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a></span>
+    <span>EUPL 1.2 · Transportial &amp; contributors · <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a></span>
   </footer>`;
 }
 

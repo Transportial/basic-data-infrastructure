@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import { RealCliIO, parseArgs } from './commands.ts';
 import { ALL_COMMANDS } from './impl.ts';

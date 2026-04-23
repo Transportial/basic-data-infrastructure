@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import type { EventEnvelope, Service } from '@bdi/contracts';
 import type { EventBus, EventSink, ProducerOptions } from './bus.ts';

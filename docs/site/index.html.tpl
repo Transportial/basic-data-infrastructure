@@ -106,7 +106,7 @@ bun run --filter '@bdi/con' dev</code></pre>
   </section>
 
   <footer class="site-footer">
-    <span>EUPL 1.2 · Stichting Connekt &amp; contributors · <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a></span>
+    <span>EUPL 1.2 · Transportial &amp; contributors · <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a></span>
   </footer>
 </body>
 </html>

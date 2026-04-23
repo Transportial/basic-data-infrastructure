@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Docker / Kubernetes secrets are typically mounted as files. The `*_FILE`
 // convention lets operators point an env var at a mount path; the runtime

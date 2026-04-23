@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Minimal ASN.1 DER writer sufficient to build PKCS#10 CSRs, X.509v3 certs,
 // and the SignatureAlgorithm + Extensions we emit. This is *not* a general

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import { err, ok, type Jwk, type Result } from '@bdi/kernel';
 import { compactVerify, InMemoryTrustlist } from '@bdi/crypto';

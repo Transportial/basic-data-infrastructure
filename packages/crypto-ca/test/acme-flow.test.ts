@@ -159,7 +159,7 @@ async function buildServices(): Promise<{
     certificateLifetimeSeconds: 86400 * 90,
     caIssuerDn: {
       commonName: 'BDI ASR CA',
-      organization: 'Connekt',
+      organization: 'Transportial',
       country: 'NL',
     },
     caPublicJwk: publicJwk(caPair.publicJwk),

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Postgres Row Level Security helper. Wraps a transaction so every statement
 // runs with `SET LOCAL app.association_id = '...'` (and optionally

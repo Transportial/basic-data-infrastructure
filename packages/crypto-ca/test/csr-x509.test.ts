@@ -32,7 +32,7 @@ import {
 
 const CA: SubjectDn = {
   commonName: 'BDI CA',
-  organization: 'Connekt',
+  organization: 'Transportial',
   country: 'NL',
 };
 

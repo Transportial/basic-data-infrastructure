@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // A lightweight scheduler for recurring jobs. Jobs can be fired by wall-clock
 // intervals or by the `trigger` method (useful for tests or external cron).

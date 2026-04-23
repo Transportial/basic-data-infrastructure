@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Narrow YAML parser for configuration files. Supports:
 // - mappings (indented `key: value` and `key:` on its own then nested block)

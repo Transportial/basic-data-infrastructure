@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import type { AssociationId, ChainContextId, Euid } from '@bdi/kernel';
 import type { ChainContext } from '../../domain/model/chain-context.ts';

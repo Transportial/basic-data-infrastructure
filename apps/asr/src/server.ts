@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import { composeAsr, type AsrConfig } from './composition-root.ts';
 import { toHttpRequest } from './interface/http/routes.ts';

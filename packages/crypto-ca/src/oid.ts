@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Registry of OIDs used for X.509 / PKCS#10 / PKIX extensions. Keeping them
 // named rather than inlined makes the ASN.1 build sites readable and lets

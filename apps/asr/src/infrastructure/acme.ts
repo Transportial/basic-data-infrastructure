@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import { generateKeyPair, publicJwk, type KeyAlg } from '@bdi/crypto';
 import {
@@ -73,7 +73,7 @@ export async function buildAcmeBundle(options: BuildAcmeOptions): Promise<AcmeBu
     certificateLifetimeSeconds: 90 * 86_400,
     caIssuerDn: {
       commonName: 'BDI Association Root CA',
-      organization: 'Stichting Connekt',
+      organization: 'Transportial',
       country: 'NL',
     },
     caPublicJwk: publicJwk(caPair.publicJwk),

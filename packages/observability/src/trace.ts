@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Lightweight W3C Trace Context helpers. For production we'd delegate to the
 // OpenTelemetry SDK, but an in-process implementation keeps the kernel fast

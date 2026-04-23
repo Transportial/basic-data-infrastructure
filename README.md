@@ -95,4 +95,4 @@ Protocol-critical code (kernel, contracts, crypto, policy, events) is released
 under **EUPL 1.2**; `@bdi/contracts` is additionally dual-licensed under
 **Apache 2.0** to maximise downstream adoption. See [LICENSE](LICENSE).
 
-Copyright (C) 2026 Stichting Connekt and contributors.
+Copyright (C) 2026 Transportial and contributors.

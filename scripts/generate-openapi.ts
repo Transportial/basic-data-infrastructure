@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Generates per-service OpenAPI 3.1 documents (JSON + YAML) into docs/api/.
 // Run as: `bun run scripts/generate-openapi.ts` — the result is a static

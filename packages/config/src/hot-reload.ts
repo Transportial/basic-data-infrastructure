@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Hot-reloadable config with atomic swap semantics. Callers construct a
 // `HotConfig` with an initial value and a reload function that returns a new

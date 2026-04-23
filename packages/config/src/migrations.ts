@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 // Plain SQL migration runner. Tracks applied migrations in a `schema_migrations`
 // table and runs any un-applied files in lexical order inside a transaction.

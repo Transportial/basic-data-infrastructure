@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// Copyright (C) 2026 Stichting Connekt and contributors
+// Copyright (C) 2026 Transportial and contributors
 
 import { euidLocalId, type Euid } from '@bdi/kernel';
 import type { VerificationSource } from '../application/ports.ts';
