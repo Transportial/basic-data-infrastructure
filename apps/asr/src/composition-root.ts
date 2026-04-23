@@ -1,0 +1,244 @@
+// SPDX-License-Identifier: EUPL-1.2
+// Copyright (C) 2026 Transportial and contributors
+
+import { SystemClock } from '@bdi/kernel';
+import { MetricsRegistry } from '@bdi/observability';
+import { Scheduler } from '@bdi/events';
+import type { MemberRepository, ConnectorRepository, ApprovalRepository } from './application/ports.ts';
+import { RotateKeysUseCase } from './application/use-cases/rotate-keys.ts';
+import { RenewCertificatesUseCase } from './application/use-cases/renew-certificates.ts';
+import { StartOnboardingUseCase } from './application/use-cases/start-onboarding.ts';
+import { RunVerificationsUseCase } from './application/use-cases/run-verifications.ts';
+import { ActivateMemberUseCase } from './application/use-cases/activate-member.ts';
+import { ChangeMemberStatusUseCase } from './application/use-cases/change-member-status.ts';
+import { RegisterConnectorUseCase } from './application/use-cases/register-connector.ts';
+import { IssueBvadUseCase } from './application/use-cases/issue-bvad.ts';
+import { BuildTrustlistUseCase } from './application/use-cases/build-trustlist.ts';
+import {
+  AuthenticateClientUseCase,
+  InMemoryJtiCache,
+  type SeenJtiCache,
+} from './application/use-cases/authenticate-client.ts';
+import {
+  InMemoryKeystore,
+  InMemoryJwksService,
+  type JwksService,
+  type Keystore,
+} from './application/use-cases/jwks.ts';
+import {
+  TokenExchangeUseCase,
+  InMemoryFederationRegistry,
+  type FederationRegistry,
+} from './application/use-cases/token-exchange.ts';
+import {
+  InMemoryTokensJournal,
+  type IssuedTokensJournal,
+} from './application/use-cases/issued-tokens-journal.ts';
+import {
+  InMemoryApprovalRepository,
+  InMemoryConnectorRepository,
+  InMemoryMemberRepository,
+} from './infrastructure/repositories/in-memory.ts';
+import { JwsSigner } from './infrastructure/crypto/signer.ts';
+import {
+  KvkVerificationSource,
+  ViesVerificationSource,
+} from './infrastructure/verification-sources.ts';
+import { SystemUuidIds } from './infrastructure/id-port.ts';
+import { BuildMemberDescriptorUseCase } from './application/use-cases/member-descriptor.ts';
+import { buildRouter, type HealthProbe } from './interface/http/routes.ts';
+import type { Router } from './interface/http/router.ts';
+import { wrapAdminAuth } from './interface/http/auth-middleware.ts';
+import type { EventBusPort, VerificationSource } from './application/ports.ts';
+import { buildAcmeBundle, type AcmeBundle, type BuildAcmeOptions } from './infrastructure/acme.ts';
+import type { AuthnPort } from '@bdi/identity';
+
+export class InMemoryEventBus implements EventBusPort {
+  readonly published: Array<{ type: string; associationId: string; body: unknown }> = [];
+  async publish(type: string, associationId: string, body: unknown): Promise<void> {
+    this.published.push({ type, associationId, body });
+  }
+  clear(): void {
+    this.published.length = 0;
+  }
+}
+
+export interface AsrConfig {
+  readonly issuer: string;
+  readonly tokenEndpointUrl?: string;
+  readonly signer?: JwsSigner;
+  readonly verificationSources?: ReadonlyArray<VerificationSource>;
+  readonly kvk?: { baseUrl: string; apiKey: string };
+  readonly vies?: { baseUrl: string };
+  readonly federation?: FederationRegistry;
+  readonly jtiCache?: SeenJtiCache;
+  readonly keystore?: Keystore;
+  readonly journal?: IssuedTokensJournal;
+  readonly memberRepository?: MemberRepository;
+  readonly connectorRepository?: ConnectorRepository;
+  readonly approvalRepository?: ApprovalRepository;
+  readonly acme?: Omit<BuildAcmeOptions, 'directoryBaseUrl'> & { directoryBaseUrl?: string };
+  readonly metrics?: MetricsRegistry;
+  readonly readinessProbes?: ReadonlyArray<HealthProbe>;
+  readonly startupProbes?: ReadonlyArray<HealthProbe>;
+  readonly startScheduler?: boolean;
+  readonly keyRotationIntervalMs?: number;
+  readonly certRenewalIntervalMs?: number;
+  readonly associationId?: string;
+  readonly adminAuthn?: AuthnPort;
+  readonly adminRequiredRoles?: ReadonlyArray<string>;
+}
+
+export interface AsrComposition {
+  readonly router: Router;
+  readonly acme: AcmeBundle;
+  readonly scheduler: Scheduler;
+  readonly deps: {
+    readonly members: MemberRepository;
+    readonly connectors: ConnectorRepository;
+    readonly approvals: ApprovalRepository;
+    readonly signer: JwsSigner;
+    readonly bus: InMemoryEventBus;
+    readonly jtiCache: SeenJtiCache;
+    readonly journal: IssuedTokensJournal;
+    readonly keystore: Keystore;
+    readonly federation: FederationRegistry;
+    readonly jwks: JwksService;
+    readonly metrics: MetricsRegistry;
+  };
+}
+
+export async function composeAsr(config: AsrConfig): Promise<AsrComposition> {
+  const clock = new SystemClock();
+  const ids = new SystemUuidIds();
+  const bus = new InMemoryEventBus();
+  const signer = config.signer ?? (await JwsSigner.generate('ES256'));
+  const keystore =
+    config.keystore ??
+    new InMemoryKeystore({
+      kid: signer.kid,
+      alg: 'ES256',
+      publicJwk: signer.publicJwk,
+      status: 'active',
+      issuedAt: clock.nowIso(),
+    });
+  const jwks = new InMemoryJwksService(keystore);
+  const jtiCache = config.jtiCache ?? new InMemoryJtiCache();
+  const journal = config.journal ?? new InMemoryTokensJournal();
+  const federation = config.federation ?? new InMemoryFederationRegistry();
+
+  const members = config.memberRepository ?? new InMemoryMemberRepository();
+  const connectors =
+    config.connectorRepository ??
+    (members instanceof InMemoryMemberRepository
+      ? new InMemoryConnectorRepository(members)
+      : new InMemoryConnectorRepository(members as unknown as InMemoryMemberRepository));
+  const approvals = config.approvalRepository ?? new InMemoryApprovalRepository();
+
+  const sources: ReadonlyArray<VerificationSource> =
+    config.verificationSources ??
+    [
+      ...(config.kvk ? [new KvkVerificationSource(config.kvk)] : []),
+      ...(config.vies ? [new ViesVerificationSource(config.vies)] : []),
+    ];
+
+  const startOnboarding = new StartOnboardingUseCase(members, ids, clock, bus);
+  const runVerifications = new RunVerificationsUseCase(members, sources, clock, bus);
+  const activateMember = new ActivateMemberUseCase(members, approvals, ids, clock, bus);
+  const changeStatus = new ChangeMemberStatusUseCase(members, clock, bus);
+  const registerConnector = new RegisterConnectorUseCase(members, connectors, ids, clock, bus);
+  const issueBvad = new IssueBvadUseCase(members, connectors, signer, clock, ids, bus, journal, {
+    issuer: config.issuer,
+  });
+  const buildTrustlist = new BuildTrustlistUseCase(connectors, signer, clock, {
+    issuer: config.issuer,
+  });
+  const authenticateClient = new AuthenticateClientUseCase(connectors, clock, jtiCache);
+  const tokenExchange = new TokenExchangeUseCase(federation, signer, clock, ids, bus, {
+    issuer: config.issuer,
+  });
+  const memberDescriptor = new BuildMemberDescriptorUseCase(
+    members,
+    signer,
+    clock,
+    ids,
+    bus,
+    { issuer: config.issuer },
+  );
+
+  const tokenEndpointUrl = config.tokenEndpointUrl ?? `${config.issuer}/oauth2/token`;
+
+  const acme = await buildAcmeBundle({
+    directoryBaseUrl: config.acme?.directoryBaseUrl ?? config.issuer,
+    ...(config.acme?.termsOfService !== undefined ? { termsOfService: config.acme.termsOfService } : {}),
+    ...(config.acme?.website !== undefined ? { website: config.acme.website } : {}),
+    ...(config.acme?.caAlg !== undefined ? { caAlg: config.acme.caAlg } : {}),
+    ...(config.acme?.dnsResolver !== undefined ? { dnsResolver: config.acme.dnsResolver } : {}),
+    ...(config.acme?.useStaticVerifiers !== undefined ? { useStaticVerifiers: config.acme.useStaticVerifiers } : {}),
+  });
+
+  const metrics = config.metrics ?? new MetricsRegistry();
+
+  // Scheduler for key rotation + certificate renewal notifications. Registered
+  // but not started by default — operators call `composition.scheduler.start()`
+  // when they want wall-clock ticking, or invoke jobs directly via `trigger`.
+  const scheduler = new Scheduler();
+  const associationId = config.associationId ?? 'unknown';
+  const rotateKeys = new RotateKeysUseCase(keystore, bus, associationId);
+  scheduler.register({
+    id: 'rotate-keys',
+    description: 'Rotate the association signing key',
+    intervalMs: config.keyRotationIntervalMs ?? 30 * 86_400_000,
+    async run() {
+      await rotateKeys.execute();
+    },
+  });
+  const renewCerts = new RenewCertificatesUseCase(
+    acme.services.certificates,
+    bus,
+    clock,
+    associationId,
+  );
+  scheduler.register({
+    id: 'renew-certificates',
+    description: 'Emit renewal events for certs nearing expiry',
+    intervalMs: config.certRenewalIntervalMs ?? 6 * 3600_000,
+    async run() {
+      await renewCerts.execute();
+    },
+  });
+  if (config.startScheduler) scheduler.start();
+
+  const router = buildRouter({
+    startOnboarding,
+    runVerifications,
+    activateMember,
+    changeStatus,
+    registerConnector,
+    issueBvad,
+    buildTrustlist,
+    authenticateClient,
+    tokenExchange,
+    jwks,
+    memberDescriptor,
+    members,
+    tokenEndpointUrl,
+    ...(config.readinessProbes !== undefined ? { readinessProbes: config.readinessProbes } : {}),
+    ...(config.startupProbes !== undefined ? { startupProbes: config.startupProbes } : {}),
+    metrics,
+  });
+
+  if (config.adminAuthn) {
+    wrapAdminAuth(router, {
+      authn: config.adminAuthn,
+      ...(config.adminRequiredRoles !== undefined ? { requiredRoles: config.adminRequiredRoles } : {}),
+    });
+  }
+
+  return {
+    router,
+    acme,
+    scheduler,
+    deps: { members, connectors, approvals, signer, bus, jtiCache, journal, keystore, federation, jwks, metrics },
+  };
+}

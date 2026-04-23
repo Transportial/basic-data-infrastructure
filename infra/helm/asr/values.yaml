@@ -1,0 +1,89 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/transportial/basic-data-infrastructure/asr
+  tag: ""
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: asr.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: asr-tls
+      hosts:
+        - asr.example.com
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 2000m
+    memory: 1Gi
+
+env:
+  ASSOCIATION_ID: ctn
+  LOG_LEVEL: info
+  ASR_ISSUER: https://asr.example.com
+  ASR_DIRECTORY_URL: https://asr.example.com
+
+secretEnv:
+  # Mounted via K8s Secret; never pass a secret directly in values.yaml.
+  DATABASE_URL: ""
+  VALKEY_URL: ""
+  ASR_SIGNING_KEY_FILE: /run/secrets/signing-key
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+  ingress:
+    fromNamespaces:
+      - bdi-ingress
+  egress:
+    allowDns: true
+    allowExternal:
+      - api.kvk.nl
+      - ec.europa.eu
+      - api.gleif.org
+
+prometheus:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    path: /metrics

@@ -1,0 +1,26 @@
+{
+  "name": "@bdi/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Wire-format schemas for BDI protocol artefacts (BVAD, BVOD, trustlist, events).",
+  "license": "EUPL-1.2 AND Apache-2.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bdi/kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

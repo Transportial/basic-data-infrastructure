@@ -1,0 +1,14 @@
+[install]
+# Workspace-aware installs
+linker = "hoisted"
+
+[test]
+# Test timeout
+timeout = 10000
+root = "."
+coverage = false
+coverageReporter = ["text", "lcov"]
+coverageDir = "coverage"
+
+[install.scopes]
+# Nothing special; just the public registry

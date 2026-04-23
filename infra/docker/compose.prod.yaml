@@ -1,0 +1,75 @@
+name: bdi-prod
+# Production-parity local stack. Meant for smoke-testing a release artefact
+# against real Postgres/Valkey with sensible resource limits, read-only
+# rootfs, and no development-only services (no Grafana/Jaeger, no Keycloak
+# realm import). All configuration is supplied via env; secrets are expected
+# to be mounted from an external secret manager in real deployments.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bdi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_MULTIPLE_DATABASES: asr_db,ors_db,con_db
+    volumes:
+      - ./init-multi-db.sh:/docker-entrypoint-initdb.d/10-multi-db.sh:ro
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: { cpus: "2", memory: "1G" }
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bdi}"]
+      interval: 5s
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: valkey-server --save 60 1 --appendonly yes
+    volumes:
+      - valkey:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: "512M" }
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+
+  asr:
+    image: ghcr.io/transportial/basic-data-infrastructure/asr:${TAG:-latest}
+    environment:
+      PORT: 8080
+      ASR_ISSUER: ${ASR_ISSUER:?set ASR_ISSUER}
+      DATABASE_URL: ${ASR_DATABASE_URL:?set ASR_DATABASE_URL}
+      VALKEY_URL: ${VALKEY_URL:?set VALKEY_URL}
+      LOG_LEVEL: info
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+
+  ors:
+    image: ghcr.io/transportial/basic-data-infrastructure/ors:${TAG:-latest}
+    environment:
+      PORT: 8080
+      ASR_ISSUER: ${ASR_ISSUER:?set ASR_ISSUER}
+      ORS_ISSUER: ${ORS_ISSUER:?set ORS_ISSUER}
+      DATABASE_URL: ${ORS_DATABASE_URL:?set ORS_DATABASE_URL}
+      VALKEY_URL: ${VALKEY_URL:?set VALKEY_URL}
+      LOG_LEVEL: info
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+
+volumes:
+  pgdata:
+  valkey:

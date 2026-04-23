@@ -1,0 +1,14 @@
+apiVersion: v2
+name: bdi-con
+description: BDI Connector reference deployment chart
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - bdi
+  - connector
+  - identity
+home: https://connekt.nl/bdi
+maintainers:
+  - name: Transportial
+    email: ops@connekt.nl

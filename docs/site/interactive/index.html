@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BDI Kerncomponenten — Interactive Explorer</title>
+  <link rel="stylesheet" href="../assets/site.css" />
+  <link rel="stylesheet" href="./interactive.css" />
+</head>
+<body class="interactive-page">
+  <header class="site-header">
+    <a href="../" class="site-brand">BDI Kerncomponenten</a>
+    <nav class="site-nav">
+      <a href="../">Overview</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="./" aria-current="page">Interactive</a>
+      <a href="../api/asr.html">API</a>
+      <a href="../docs/">Docs</a>
+      <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="interactive-layout">
+    <aside class="interactive-sidebar">
+      <h1>Explore the BDI</h1>
+      <p class="lede">
+        Click a component to read about its responsibilities, or run a flow
+        to watch tokens and events move through the system.
+      </p>
+
+      <h2>Flows</h2>
+      <div class="flow-buttons">
+        <button data-flow="onboarding" class="flow-btn">Member onboarding</button>
+        <button data-flow="connector" class="flow-btn">Connector registration (ACME)</button>
+        <button data-flow="bvad" class="flow-btn">Issue a BVAD</button>
+        <button data-flow="context" class="flow-btn">Create chain context</button>
+        <button data-flow="bvod" class="flow-btn">Issue a BVOD</button>
+        <button data-flow="delivery" class="flow-btn">Deliver a webhook</button>
+        <button data-flow="federation" class="flow-btn">Cross-association exchange</button>
+      </div>
+
+      <h2>Selection</h2>
+      <div id="detail-panel" class="detail-panel">
+        <p class="muted">Click anything in the diagram, or pick a flow above.</p>
+      </div>
+
+      <h2>Legend</h2>
+      <ul class="legend">
+        <li><span class="dot dot-svc"></span> BDI core service</li>
+        <li><span class="dot dot-ext"></span> External system</li>
+        <li><span class="dot dot-actor"></span> Organisation / user</li>
+        <li><span class="dot dot-msg"></span> Token / event in flight</li>
+      </ul>
+    </aside>
+
+    <section class="interactive-stage">
+      <svg id="bdi-canvas" viewBox="0 0 1200 720" role="img" aria-label="BDI architecture">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" />
+          </marker>
+          <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+          </marker>
+          <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Grouping lines -->
+        <line class="bg-line" x1="0" y1="80" x2="1200" y2="80" />
+        <text x="16" y="72" class="group-label">Trust plane</text>
+        <line class="bg-line" x1="0" y1="300" x2="1200" y2="300" />
+        <text x="16" y="292" class="group-label">Orchestration plane</text>
+        <line class="bg-line" x1="0" y1="540" x2="1200" y2="540" />
+        <text x="16" y="532" class="group-label">Data plane</text>
+
+        <!-- Actors -->
+        <g class="node actor" data-node="member-a" transform="translate(60,130)">
+          <rect width="140" height="90" rx="10"/>
+          <text x="70" y="35">Member A</text>
+          <text x="70" y="60" class="sub">KvK, LEI, reps</text>
+        </g>
+
+        <g class="node actor" data-node="member-b" transform="translate(1000,130)">
+          <rect width="140" height="90" rx="10"/>
+          <text x="70" y="35">Member B</text>
+          <text x="70" y="60" class="sub">peer organisation</text>
+        </g>
+
+        <!-- External systems -->
+        <g class="node ext" data-node="keycloak" transform="translate(60,370)">
+          <rect width="140" height="60" rx="10"/>
+          <text x="70" y="25">Keycloak / IdP</text>
+          <text x="70" y="45" class="sub">OIDC + SAML</text>
+        </g>
+
+        <g class="node ext" data-node="registries" transform="translate(60,450)">
+          <rect width="140" height="60" rx="10"/>
+          <text x="70" y="25">KvK/KBO/GLEIF/VIES</text>
+          <text x="70" y="45" class="sub">verifications</text>
+        </g>
+
+        <g class="node ext" data-node="ca" transform="translate(1000,370)">
+          <rect width="140" height="60" rx="10"/>
+          <text x="70" y="25">ACME CA</text>
+          <text x="70" y="45" class="sub">step-ca / HSM</text>
+        </g>
+
+        <g class="node ext" data-node="peer-asr" transform="translate(1000,450)">
+          <rect width="140" height="60" rx="10"/>
+          <text x="70" y="25">Peer ASR</text>
+          <text x="70" y="45" class="sub">federation partner</text>
+        </g>
+
+        <!-- Core services -->
+        <g class="node svc" data-node="asr" transform="translate(400,130)">
+          <rect width="180" height="110" rx="12"/>
+          <text x="90" y="34" class="title">ASR</text>
+          <text x="90" y="56" class="sub">Associatie Register</text>
+          <text x="90" y="82" class="meta">member governance</text>
+          <text x="90" y="100" class="meta">trustlist · BVAD</text>
+        </g>
+
+        <g class="node svc" data-node="ors" transform="translate(620,130)">
+          <rect width="180" height="110" rx="12"/>
+          <text x="90" y="34" class="title">ORS</text>
+          <text x="90" y="56" class="sub">Orkestratie Register</text>
+          <text x="90" y="82" class="meta">chain contexts</text>
+          <text x="90" y="100" class="meta">BVOD · subscriptions</text>
+        </g>
+
+        <g class="node svc" data-node="con-a" transform="translate(300,590)">
+          <rect width="180" height="110" rx="12"/>
+          <text x="90" y="34" class="title">Connector A</text>
+          <text x="90" y="56" class="sub">consumer</text>
+          <text x="90" y="82" class="meta">PEP · verify BVAD/BVOD</text>
+          <text x="90" y="100" class="meta">webhook dispatch</text>
+        </g>
+
+        <g class="node svc" data-node="con-b" transform="translate(720,590)">
+          <rect width="180" height="110" rx="12"/>
+          <text x="90" y="34" class="title">Connector B</text>
+          <text x="90" y="56" class="sub">provider</text>
+          <text x="90" y="82" class="meta">accepts BVAD/BVOD</text>
+          <text x="90" y="100" class="meta">delivers to SaaS</text>
+        </g>
+
+        <!-- Static edges -->
+        <g class="edges">
+          <path class="edge" data-edge="member-asr"   d="M 200 175 C 280 175, 320 185, 400 185" />
+          <path class="edge" data-edge="asr-keycloak" d="M 400 200 C 320 210, 260 330, 200 400" />
+          <path class="edge" data-edge="asr-reg"      d="M 400 215 C 300 250, 230 400, 200 475" />
+          <path class="edge" data-edge="asr-ors"      d="M 580 185 L 620 185" />
+          <path class="edge" data-edge="asr-ca"       d="M 580 205 C 720 205, 880 350, 1000 390" />
+          <path class="edge" data-edge="asr-peer"     d="M 580 225 C 760 260, 900 380, 1000 470" />
+          <path class="edge" data-edge="ors-conA"     d="M 680 240 C 600 320, 460 510, 400 590" />
+          <path class="edge" data-edge="ors-conB"     d="M 740 240 C 780 330, 820 520, 820 590" />
+          <path class="edge" data-edge="asr-conA"     d="M 460 240 C 430 360, 400 500, 390 590" />
+          <path class="edge" data-edge="asr-conB"     d="M 520 240 C 650 360, 760 520, 810 590" />
+          <path class="edge" data-edge="conA-conB"    d="M 480 640 L 720 640" />
+          <path class="edge" data-edge="memberA-conA" d="M 150 220 C 200 380, 280 520, 340 590" />
+          <path class="edge" data-edge="memberB-conB" d="M 1060 220 C 1000 380, 900 520, 870 590" />
+        </g>
+
+        <!-- Flow token (hidden until a flow runs) -->
+        <g id="token-layer"></g>
+      </svg>
+
+      <div class="legend-bottom">
+        <span class="key"><span class="sw sw-default"></span>static relationship</span>
+        <span class="key"><span class="sw sw-active"></span>active during flow</span>
+        <span class="key"><span class="sw sw-token"></span>token/event payload</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>EUPL 1.2 · Transportial &amp; contributors</span>
+  </footer>
+
+  <script src="./interactive.js" defer></script>
+</body>
+</html>

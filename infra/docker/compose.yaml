@@ -1,0 +1,140 @@
+name: bdi-dev
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bdi
+      POSTGRES_PASSWORD: bdi
+      POSTGRES_MULTIPLE_DATABASES: asr_db,ors_db,con_db
+    volumes:
+      - ./init-multi-db.sh:/docker-entrypoint-initdb.d/10-multi-db.sh:ro
+      - pgdata:/var/lib/postgresql/data
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bdi"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: valkey-server --save "" --appendonly yes
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+    volumes:
+      - ./keycloak-realm.json:/opt/keycloak/data/import/bdi-realm.json:ro
+    ports: ["8180:8080"]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.63
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports: ["3000:3000"]
+    depends_on:
+      - prometheus
+
+  asr:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.bun
+      args: { APP: asr }
+    environment:
+      PORT: 8080
+      ASR_ISSUER: http://asr:8080
+      DATABASE_URL: postgres://bdi:bdi@postgres/asr_db
+      VALKEY_URL: redis://valkey:6379
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/bdi
+      LOG_LEVEL: info
+    ports: ["8080:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/health/ready"]
+      interval: 5s
+
+  ors:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.bun
+      args: { APP: ors }
+    environment:
+      PORT: 8080
+      ASR_ISSUER: http://asr:8080
+      ORS_ISSUER: http://ors:8080
+      DATABASE_URL: postgres://bdi:bdi@postgres/ors_db
+      VALKEY_URL: redis://valkey:6379
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      LOG_LEVEL: info
+    depends_on:
+      asr: { condition: service_healthy }
+    ports: ["8081:8080"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/health/ready"]
+      interval: 5s
+
+  con:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.bun
+      args: { APP: con }
+    environment:
+      PORT: 8443
+      ASR_ISSUER: http://asr:8080
+      ORS_ISSUER: http://ors:8080
+      ASSOCIATION_ID: ctn
+      CONNECTOR_ID: urn:bdi:connector:00000000-0000-4000-8000-000000000001
+      CON_AUDIENCE: urn:bdi:connector:00000000-0000-4000-8000-000000000001
+      VALKEY_URL: redis://valkey:6379
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      asr: { condition: service_healthy }
+      ors: { condition: service_healthy }
+    ports: ["8443:8443"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8443/health/ready"]
+      interval: 5s
+
+  portal:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.portal
+    environment:
+      VITE_ASR_URL: http://localhost:8080
+      VITE_ORS_URL: http://localhost:8081
+    ports: ["5173:5173"]
+    depends_on:
+      - asr
+      - ors
+
+volumes:
+  pgdata:
