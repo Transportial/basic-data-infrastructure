@@ -37,6 +37,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Lowercase the repository name
+        id: repo
+        run: echo "name=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -44,7 +47,7 @@ jobs:
           build-args: APP=${{ matrix.app }}
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/${{ matrix.app }}:${{ github.sha }}
-            ghcr.io/${{ github.repository }}/${{ matrix.app }}:latest
+            ghcr.io/${{ steps.repo.outputs.name }}/${{ matrix.app }}:${{ github.sha }}
+            ghcr.io/${{ steps.repo.outputs.name }}/${{ matrix.app }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
