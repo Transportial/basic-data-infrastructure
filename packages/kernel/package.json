@@ -1,0 +1,23 @@
+{
+  "name": "@bdi/kernel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BDI pure domain primitives - value objects, identifiers, Result type. No I/O dependencies.",
+  "license": "EUPL-1.2",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

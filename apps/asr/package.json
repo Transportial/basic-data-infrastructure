@@ -1,0 +1,29 @@
+{
+  "name": "@bdi/asr",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BDI Associatie Register (ASR) - member governance, trustlist, BVAD issuance.",
+  "license": "EUPL-1.2",
+  "type": "module",
+  "main": "./src/server.ts",
+  "scripts": {
+    "build": "bun build ./src/server.ts --outdir ./dist --target bun --external bun:sqlite",
+    "dev": "bun run --watch ./src/server.ts",
+    "start": "bun run ./src/server.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bdi/kernel": "workspace:*",
+    "@bdi/contracts": "workspace:*",
+    "@bdi/config": "workspace:*",
+    "@bdi/crypto": "workspace:*",
+    "@bdi/events": "workspace:*",
+    "@bdi/observability": "workspace:*",
+    "@bdi/testing": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
