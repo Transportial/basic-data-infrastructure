@@ -5,6 +5,7 @@ import { Router, type HttpRequest, type HttpResponse } from './router.ts';
 import type { VerifyIncomingUseCase } from '../../application/use-cases/verify-incoming.ts';
 import type { DeliverWebhookUseCase } from '../../application/use-cases/deliver-webhook.ts';
 import type { ReceiveWebhookUseCase } from '../../application/use-cases/receive-webhook.ts';
+import type { ProxyForwardUseCase } from '../../application/use-cases/proxy-forward.ts';
 import type { DeliveryRepository } from '../../application/ports.ts';
 import type { WebhookDelivery } from '../../domain/webhook.ts';
 
@@ -12,21 +13,49 @@ export interface RateLimiterPort {
   allow(key: string): Promise<boolean>;
 }
 
+export interface HealthProbe {
+  check(): Promise<{ ok: boolean; detail?: string }>;
+}
+
+export interface MetricsRenderer {
+  render(): string;
+}
+
 export interface RouterDeps {
   readonly verifyIncoming: VerifyIncomingUseCase;
   readonly deliverWebhook: DeliverWebhookUseCase;
   readonly receiveWebhook: ReceiveWebhookUseCase;
+  readonly proxyForward: ProxyForwardUseCase;
   readonly deliveries: DeliveryRepository;
   readonly rateLimiter: RateLimiterPort;
   readonly idGenerator: () => string;
   readonly nowIso: () => string;
+  readonly readinessProbes?: ReadonlyArray<HealthProbe>;
+  readonly startupProbes?: ReadonlyArray<HealthProbe>;
+  readonly metrics?: MetricsRenderer;
 }
 
 export function buildRouter(deps: RouterDeps): Router {
   const router = new Router();
 
   router.get('/health/live', async () => json(200, { status: 'ok' }));
-  router.get('/health/ready', async () => json(200, { status: 'ready' }));
+  router.get('/health/ready', async () => {
+    const results = await runProbes(deps.readinessProbes ?? []);
+    return results.ok
+      ? json(200, { status: 'ready', checks: results.checks })
+      : json(503, { status: 'not-ready', checks: results.checks });
+  });
+  router.get('/health/startup', async () => {
+    const results = await runProbes(deps.startupProbes ?? []);
+    return results.ok
+      ? json(200, { status: 'started', checks: results.checks })
+      : json(503, { status: 'starting', checks: results.checks });
+  });
+
+  router.get('/metrics', async () => {
+    if (!deps.metrics) return { status: 200, body: '# no metrics\n', headers: { 'content-type': 'text/plain' } };
+    return { status: 200, headers: { 'content-type': 'text/plain; version=0.0.4' }, body: deps.metrics.render() };
+  });
 
   // Data-plane verification — a gateway endpoint stands in for what would be
   // reverse-proxy middleware. Callers supply the BVAD + BVOD via headers and
@@ -55,6 +84,45 @@ export function buildRouter(deps: RouterDeps): Router {
     }
     return json(200, { ok: true, subject: r.value.bvad.sub });
   });
+
+  // Actual reverse-proxy: forward everything under /proxy/* to the configured
+  // upstream after full verification. Method and body are preserved.
+  const proxyHandler = async (req: HttpRequest): Promise<HttpResponse> => {
+    const rlKey = req.headers['x-client-id'] ?? req.headers['authorization'] ?? 'anonymous';
+    if (!(await deps.rateLimiter.allow(`proxy:${rlKey}`))) {
+      return json(429, { error: 'rate-limited' });
+    }
+    const bvad = req.headers['authorization']?.replace(/^Bearer\s+/, '') ?? null;
+    const bvod = req.headers['x-bdi-context'] ?? null;
+    const action = req.headers['x-bdi-action'] ?? `${req.method.toLowerCase()}:resource`;
+    const resourceHeader = req.headers['x-bdi-resource'];
+    const resource = resourceHeader
+      ? (JSON.parse(resourceHeader) as { type: string; id: string; tags?: Record<string, string> })
+      : { type: 'proxy', id: req.path };
+    const clientCertThumb = req.headers['x-client-cert-thumbprint'];
+
+    const bodyString = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
+    const r = await deps.proxyForward.execute({
+      method: req.method,
+      path: stripProxyPrefix(req.path),
+      headers: req.headers,
+      body: bodyString,
+      bvad,
+      bvod,
+      action,
+      resource,
+      ...(clientCertThumb !== undefined ? { clientCertThumbprint: clientCertThumb } : {}),
+    });
+    if (!r.ok) {
+      const status = statusForProxyError(r.error.type);
+      return json(status, { error: r.error.type });
+    }
+    return { status: r.value.status, headers: r.value.headers, body: r.value.body };
+  };
+  router.get('/proxy-upstream/*', proxyHandler);
+  router.post('/proxy-upstream/*', proxyHandler);
+  router.put('/proxy-upstream/*', proxyHandler);
+  router.delete('/proxy-upstream/*', proxyHandler);
 
   router.post('/webhooks/outbound', async (req) => {
     const body = (req.body as Record<string, unknown> | null) ?? {};
@@ -135,6 +203,35 @@ function statusForVerifyError(type: string): number {
     default:
       return 400;
   }
+}
+
+function statusForProxyError(type: string): number {
+  switch (type) {
+    case 'no-matching-upstream':
+      return 404;
+    case 'verify-failed':
+      return 401;
+    case 'mtls-required':
+    case 'mtls-mismatch':
+      return 401;
+    case 'upstream-failure':
+      return 502;
+    default:
+      return 500;
+  }
+}
+
+function stripProxyPrefix(path: string): string {
+  return path.startsWith('/proxy-upstream')
+    ? path.slice('/proxy-upstream'.length) || '/'
+    : path;
+}
+
+async function runProbes(
+  probes: ReadonlyArray<HealthProbe>,
+): Promise<{ ok: boolean; checks: ReadonlyArray<{ ok: boolean; detail?: string }> }> {
+  const results = await Promise.all(probes.map(async (p) => p.check()));
+  return { ok: results.every((r) => r.ok), checks: results };
 }
 
 function json(status: number, body: unknown): HttpResponse {

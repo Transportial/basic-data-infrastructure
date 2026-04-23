@@ -7,6 +7,7 @@ export * from './spki.ts';
 export * from './csr.ts';
 export * from './x509.ts';
 export * from './ca-signer.ts';
+export * from './ocsp.ts';
 export * from './acme/types.ts';
 export * from './acme/ports.ts';
 export * from './acme/repositories.ts';

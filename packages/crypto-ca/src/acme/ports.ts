@@ -42,6 +42,7 @@ export interface CertificateRepository {
   save(cert: IssuedCertificate): Promise<void>;
   find(serial: string): Promise<IssuedCertificate | null>;
   listRevoked(): Promise<ReadonlyArray<IssuedCertificate>>;
+  listAll(): Promise<ReadonlyArray<IssuedCertificate>>;
 }
 
 export interface HttpChallengeVerifier {

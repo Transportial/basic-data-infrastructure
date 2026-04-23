@@ -23,6 +23,14 @@ import type {
 } from '../../application/use-cases/manage-natural-persons.ts';
 import type { ChainContextRepository } from '../../application/ports.ts';
 
+export interface HealthProbe {
+  check(): Promise<{ ok: boolean; detail?: string }>;
+}
+
+export interface MetricsRenderer {
+  render(): string;
+}
+
 export interface RouterDeps {
   readonly createChainContext: CreateChainContextUseCase;
   readonly addParty: AddPartyUseCase;
@@ -35,13 +43,27 @@ export interface RouterDeps {
   readonly listRolePersons: ListRolePersonsUseCase;
   readonly contexts: ChainContextRepository;
   readonly pseudonymSalt: string;
+  readonly readinessProbes?: ReadonlyArray<HealthProbe>;
+  readonly startupProbes?: ReadonlyArray<HealthProbe>;
+  readonly metrics?: MetricsRenderer;
 }
 
 export function buildRouter(deps: RouterDeps): Router {
   const router = new Router();
 
   router.get('/health/live', async () => json(200, { status: 'ok' }));
-  router.get('/health/ready', async () => json(200, { status: 'ready' }));
+  router.get('/health/ready', async () => {
+    const r = await runProbes(deps.readinessProbes ?? []);
+    return r.ok ? json(200, { status: 'ready', checks: r.checks }) : json(503, { status: 'not-ready', checks: r.checks });
+  });
+  router.get('/health/startup', async () => {
+    const r = await runProbes(deps.startupProbes ?? []);
+    return r.ok ? json(200, { status: 'started', checks: r.checks }) : json(503, { status: 'starting', checks: r.checks });
+  });
+  router.get('/metrics', async () => {
+    if (!deps.metrics) return { status: 200, body: '# no metrics\n', headers: { 'content-type': 'text/plain' } };
+    return { status: 200, headers: { 'content-type': 'text/plain; version=0.0.4' }, body: deps.metrics.render() };
+  });
 
   router.post('/contexts', async (req) => {
     const body = req.body as Record<string, unknown> | null;
@@ -235,6 +257,13 @@ export function buildRouter(deps: RouterDeps): Router {
   });
 
   return router;
+}
+
+async function runProbes(
+  probes: ReadonlyArray<HealthProbe>,
+): Promise<{ ok: boolean; checks: ReadonlyArray<{ ok: boolean; detail?: string }> }> {
+  const results = await Promise.all(probes.map(async (p) => p.check()));
+  return { ok: results.every((r) => r.ok), checks: results };
 }
 
 function json(status: number, body: unknown): HttpResponse {

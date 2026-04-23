@@ -34,6 +34,7 @@ export class Router {
     const paramKeys: string[] = [];
     const regex = pathTemplate
       .replace(/\/$/, '')
+      .replace(/\/\*$/, (_) => '(?:/.*)?')
       .replace(/\/:([a-zA-Z_][a-zA-Z0-9_]*)/g, (_, key) => {
         paramKeys.push(key);
         return '/([^/]+)';

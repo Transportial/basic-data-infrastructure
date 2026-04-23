@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Stichting Connekt and contributors
 
 import { SystemClock } from '@bdi/kernel';
+import { MetricsRegistry } from '@bdi/observability';
 import { StartOnboardingUseCase } from './application/use-cases/start-onboarding.ts';
 import { RunVerificationsUseCase } from './application/use-cases/run-verifications.ts';
 import { ActivateMemberUseCase } from './application/use-cases/activate-member.ts';
@@ -40,7 +41,8 @@ import {
   ViesVerificationSource,
 } from './infrastructure/verification-sources.ts';
 import { SystemUuidIds } from './infrastructure/id-port.ts';
-import { buildRouter } from './interface/http/routes.ts';
+import { BuildMemberDescriptorUseCase } from './application/use-cases/member-descriptor.ts';
+import { buildRouter, type HealthProbe } from './interface/http/routes.ts';
 import type { Router } from './interface/http/router.ts';
 import type { EventBusPort, VerificationSource } from './application/ports.ts';
 import { buildAcmeBundle, type AcmeBundle, type BuildAcmeOptions } from './infrastructure/acme.ts';
@@ -67,6 +69,9 @@ export interface AsrConfig {
   readonly keystore?: Keystore;
   readonly journal?: IssuedTokensJournal;
   readonly acme?: Omit<BuildAcmeOptions, 'directoryBaseUrl'> & { directoryBaseUrl?: string };
+  readonly metrics?: MetricsRegistry;
+  readonly readinessProbes?: ReadonlyArray<HealthProbe>;
+  readonly startupProbes?: ReadonlyArray<HealthProbe>;
 }
 
 export interface AsrComposition {
@@ -83,6 +88,7 @@ export interface AsrComposition {
     readonly keystore: Keystore;
     readonly federation: FederationRegistry;
     readonly jwks: JwksService;
+    readonly metrics: MetricsRegistry;
   };
 }
 
@@ -131,6 +137,14 @@ export async function composeAsr(config: AsrConfig): Promise<AsrComposition> {
   const tokenExchange = new TokenExchangeUseCase(federation, signer, clock, ids, bus, {
     issuer: config.issuer,
   });
+  const memberDescriptor = new BuildMemberDescriptorUseCase(
+    members,
+    signer,
+    clock,
+    ids,
+    bus,
+    { issuer: config.issuer },
+  );
 
   const tokenEndpointUrl = config.tokenEndpointUrl ?? `${config.issuer}/oauth2/token`;
 
@@ -143,6 +157,8 @@ export async function composeAsr(config: AsrConfig): Promise<AsrComposition> {
     ...(config.acme?.useStaticVerifiers !== undefined ? { useStaticVerifiers: config.acme.useStaticVerifiers } : {}),
   });
 
+  const metrics = config.metrics ?? new MetricsRegistry();
+
   const router = buildRouter({
     startOnboarding,
     runVerifications,
@@ -154,13 +170,17 @@ export async function composeAsr(config: AsrConfig): Promise<AsrComposition> {
     authenticateClient,
     tokenExchange,
     jwks,
+    memberDescriptor,
     members,
     tokenEndpointUrl,
+    ...(config.readinessProbes !== undefined ? { readinessProbes: config.readinessProbes } : {}),
+    ...(config.startupProbes !== undefined ? { startupProbes: config.startupProbes } : {}),
+    metrics,
   });
 
   return {
     router,
     acme,
-    deps: { members, connectors, approvals, signer, bus, jtiCache, journal, keystore, federation, jwks },
+    deps: { members, connectors, approvals, signer, bus, jtiCache, journal, keystore, federation, jwks, metrics },
   };
 }

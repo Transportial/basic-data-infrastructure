@@ -4,9 +4,14 @@
 import { SystemClock } from '@bdi/kernel';
 import { InMemoryTrustlist } from '@bdi/crypto';
 import { EmbeddedPdp, type Policy } from '@bdi/policy';
+import { MetricsRegistry } from '@bdi/observability';
 import { TrustlistStore } from './infrastructure/trustlist-store.ts';
 import { OrsTrust } from './infrastructure/ors-trust.ts';
 import { FetchHttpClient, RecordingHttpClient } from './infrastructure/http-client.ts';
+import {
+  FetchHeaderedHttpClient,
+  RecordingHeaderedHttpClient,
+} from './infrastructure/http-forward.ts';
 import { InMemoryDeliveryRepository } from './infrastructure/delivery-repository.ts';
 import { VerifyIncomingUseCase } from './application/use-cases/verify-incoming.ts';
 import { DeliverWebhookUseCase } from './application/use-cases/deliver-webhook.ts';
@@ -15,8 +20,13 @@ import {
   ReceiveWebhookUseCase,
   type ReplayCache,
 } from './application/use-cases/receive-webhook.ts';
+import {
+  ProxyForwardUseCase,
+  type UpstreamRoute,
+  type HeaderedHttpClient,
+} from './application/use-cases/proxy-forward.ts';
 import { InMemoryValkey, ValkeyTokenBucket, type RateLimiter } from '@bdi/events';
-import { buildRouter } from './interface/http/routes.ts';
+import { buildRouter, type HealthProbe } from './interface/http/routes.ts';
 import type { Router } from './interface/http/router.ts';
 import type { EventBusPort, HttpClientPort } from './application/ports.ts';
 
@@ -44,6 +54,11 @@ export interface ConConfig {
   readonly replayCache?: ReplayCache;
   readonly rateLimiter?: RateLimiter;
   readonly rateLimit?: { limit: number; windowMs: number };
+  readonly upstreams?: ReadonlyArray<UpstreamRoute>;
+  readonly forwardClient?: HeaderedHttpClient;
+  readonly metrics?: MetricsRegistry;
+  readonly readinessProbes?: ReadonlyArray<HealthProbe>;
+  readonly startupProbes?: ReadonlyArray<HealthProbe>;
 }
 
 export interface ConComposition {
@@ -56,8 +71,10 @@ export interface ConComposition {
     readonly deliveries: InMemoryDeliveryRepository;
     readonly bus: InMemoryEventBus;
     readonly http: HttpClientPort;
+    readonly forwardClient: HeaderedHttpClient;
     readonly replayCache: ReplayCache;
     readonly rateLimiter: RateLimiter;
+    readonly metrics: MetricsRegistry;
   };
 }
 
@@ -121,22 +138,32 @@ export function composeCon(config: ConConfig): ConComposition {
     },
     config.associationId,
   );
+  const forwardClient = config.forwardClient ?? new FetchHeaderedHttpClient();
+  const proxyForward = new ProxyForwardUseCase(verifyIncoming, forwardClient, {
+    routes: config.upstreams ?? [],
+    stripBdiHeaders: true,
+  });
+  const metrics = config.metrics ?? new MetricsRegistry();
 
   const router = buildRouter({
     verifyIncoming,
     deliverWebhook,
     receiveWebhook,
+    proxyForward,
     deliveries,
     rateLimiter,
     idGenerator: () => crypto.randomUUID(),
     nowIso: () => clock.nowIso(),
+    ...(config.readinessProbes !== undefined ? { readinessProbes: config.readinessProbes } : {}),
+    ...(config.startupProbes !== undefined ? { startupProbes: config.startupProbes } : {}),
+    metrics,
   });
 
   return {
     router,
-    deps: { trustlist, orsTrust, asrList, orsList, deliveries, bus, http, replayCache, rateLimiter },
+    deps: { trustlist, orsTrust, asrList, orsList, deliveries, bus, http, forwardClient, replayCache, rateLimiter, metrics },
   };
 }
 
 // Exposed for tests that want a recording client by default
-export { RecordingHttpClient };
+export { RecordingHttpClient, RecordingHeaderedHttpClient };

@@ -19,7 +19,16 @@ import type { BuildTrustlistUseCase } from '../../application/use-cases/build-tr
 import type { AuthenticateClientUseCase } from '../../application/use-cases/authenticate-client.ts';
 import type { TokenExchangeUseCase } from '../../application/use-cases/token-exchange.ts';
 import type { JwksService } from '../../application/use-cases/jwks.ts';
+import type { BuildMemberDescriptorUseCase } from '../../application/use-cases/member-descriptor.ts';
 import type { MemberRepository } from '../../application/ports.ts';
+
+export interface HealthProbe {
+  check(): Promise<{ ok: boolean; detail?: string }>;
+}
+
+export interface MetricsRenderer {
+  render(): string;
+}
 
 export interface RouterDeps {
   readonly startOnboarding: StartOnboardingUseCase;
@@ -32,15 +41,30 @@ export interface RouterDeps {
   readonly authenticateClient: AuthenticateClientUseCase;
   readonly tokenExchange: TokenExchangeUseCase;
   readonly jwks: JwksService;
+  readonly memberDescriptor: BuildMemberDescriptorUseCase;
   readonly members: MemberRepository;
   readonly tokenEndpointUrl: string;
+  readonly readinessProbes?: ReadonlyArray<HealthProbe>;
+  readonly startupProbes?: ReadonlyArray<HealthProbe>;
+  readonly metrics?: MetricsRenderer;
 }
 
 export function buildRouter(deps: RouterDeps): Router {
   const router = new Router();
 
   router.get('/health/live', async () => json(200, { status: 'ok' }));
-  router.get('/health/ready', async () => json(200, { status: 'ready' }));
+  router.get('/health/ready', async () => {
+    const r = await runProbes(deps.readinessProbes ?? []);
+    return r.ok ? json(200, { status: 'ready', checks: r.checks }) : json(503, { status: 'not-ready', checks: r.checks });
+  });
+  router.get('/health/startup', async () => {
+    const r = await runProbes(deps.startupProbes ?? []);
+    return r.ok ? json(200, { status: 'started', checks: r.checks }) : json(503, { status: 'starting', checks: r.checks });
+  });
+  router.get('/metrics', async () => {
+    if (!deps.metrics) return { status: 200, body: '# no metrics\n', headers: { 'content-type': 'text/plain' } };
+    return { status: 200, headers: { 'content-type': 'text/plain; version=0.0.4' }, body: deps.metrics.render() };
+  });
 
   router.post('/admin/members', async (req) => {
     const body = req.body as Record<string, unknown> | null;
@@ -203,7 +227,22 @@ export function buildRouter(deps: RouterDeps): Router {
     return { status: 200, headers: { 'content-type': 'application/jose' }, body: r.value.jws };
   });
 
+  router.get('/.well-known/bdi/members/:euid', async (req) => {
+    const euid = parseEuid(req.params.euid!);
+    if (!euid.ok) return json(400, { error: 'bad-euid' });
+    const r = await deps.memberDescriptor.execute(euid.value);
+    if (!r.ok) return json(404, { error: r.error.type });
+    return { status: 200, headers: { 'content-type': 'application/jose' }, body: r.value };
+  });
+
   return router;
+}
+
+async function runProbes(
+  probes: ReadonlyArray<HealthProbe>,
+): Promise<{ ok: boolean; checks: ReadonlyArray<{ ok: boolean; detail?: string }> }> {
+  const results = await Promise.all(probes.map(async (p) => p.check()));
+  return { ok: results.every((r) => r.ok), checks: results };
 }
 
 function json(status: number, body: unknown): HttpResponse {

@@ -11,16 +11,19 @@ import {
   InMemoryNonceStore,
   InMemoryOrderRepository,
   JwkCaSigner,
+  OcspResponder,
   StaticDnsChallengeVerifier,
   StaticHttpChallengeVerifier,
   StaticTlsAlpnChallengeVerifier,
   SystemDnsChallengeVerifier,
   SystemHttpChallengeVerifier,
+  sha1Sync,
   type AcmeHttp,
   type AcmeServerConfig,
   type AcmeServices,
   type DnsResolver,
 } from '@bdi/crypto-ca';
+import { jwkToSpki, spkiPublicKeyBytes } from '@bdi/crypto-ca';
 
 export interface BuildAcmeOptions {
   readonly directoryBaseUrl: string;
@@ -35,6 +38,7 @@ export interface AcmeBundle {
   readonly handler: AcmeHttp;
   readonly services: AcmeServices;
   readonly eab: InMemoryEabStore;
+  readonly ocsp: OcspResponder;
   readonly staticHttp?: StaticHttpChallengeVerifier;
   readonly staticDns?: StaticDnsChallengeVerifier;
   readonly staticTlsAlpn?: StaticTlsAlpnChallengeVerifier;
@@ -100,10 +104,14 @@ export async function buildAcmeBundle(options: BuildAcmeOptions): Promise<AcmeBu
   };
 
   const handler = buildAcmeHttp(services);
+  const caPublicBits = spkiPublicKeyBytes(jwkToSpki(config.caPublicJwk));
+  const responderKeyHash = sha1Sync(caPublicBits);
+  const ocsp = new OcspResponder(services.certificates, signer, responderKeyHash);
   return {
     handler,
     services,
     eab,
+    ocsp,
     ...(staticHttp !== undefined ? { staticHttp } : {}),
     ...(staticDns !== undefined ? { staticDns } : {}),
     ...(staticTlsAlpn !== undefined ? { staticTlsAlpn } : {}),

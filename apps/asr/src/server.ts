@@ -19,6 +19,25 @@ export async function createServer(options: ServerOptions): Promise<AsrServer> {
     composition,
     fetch: async (req: Request) => {
       const url = new URL(req.url);
+      if (url.pathname === '/acme/ocsp' && (req.method === 'POST' || req.method === 'GET')) {
+        let reqBody: Uint8Array;
+        if (req.method === 'POST') {
+          reqBody = new Uint8Array(await req.arrayBuffer());
+        } else {
+          const b64 = url.pathname.split('/').pop() ?? '';
+          reqBody = Uint8Array.from(
+            Buffer.from(decodeURIComponent(b64).replace(/-/g, '+').replace(/_/g, '/'), 'base64'),
+          );
+        }
+        const out = await composition.acme.ocsp.respond(reqBody);
+        if (!out) {
+          return new Response('malformed-request', { status: 400 });
+        }
+        return new Response(out.der, {
+          status: 200,
+          headers: { 'content-type': out.contentType },
+        });
+      }
       if (url.pathname === '/acme/directory' || url.pathname.startsWith('/acme/')) {
         return composition.acme.handler.handle(req);
       }

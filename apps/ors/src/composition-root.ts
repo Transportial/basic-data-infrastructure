@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Stichting Connekt and contributors
 
 import { SystemClock } from '@bdi/kernel';
+import { MetricsRegistry } from '@bdi/observability';
 import { CreateChainContextUseCase } from './application/use-cases/create-chain-context.ts';
 import {
   AddDelegationUseCase,
@@ -22,7 +23,7 @@ import {
 import { InMemoryConnectorLookup } from './infrastructure/connector-lookup.ts';
 import { JwsSigner, randomSigningKey } from './infrastructure/crypto/signer.ts';
 import { SystemUuidIds } from './infrastructure/id-port.ts';
-import { buildRouter } from './interface/http/routes.ts';
+import { buildRouter, type HealthProbe } from './interface/http/routes.ts';
 import type { Router } from './interface/http/router.ts';
 import type { EventBusPort } from './application/ports.ts';
 
@@ -41,6 +42,9 @@ export interface OrsConfig {
   readonly signingKid?: string;
   readonly signingKey?: Uint8Array;
   readonly pseudonymSalt?: string;
+  readonly metrics?: MetricsRegistry;
+  readonly readinessProbes?: ReadonlyArray<HealthProbe>;
+  readonly startupProbes?: ReadonlyArray<HealthProbe>;
 }
 
 export interface OrsComposition {
@@ -51,6 +55,7 @@ export interface OrsComposition {
     readonly connectors: InMemoryConnectorLookup;
     readonly signer: JwsSigner;
     readonly bus: InMemoryEventBus;
+    readonly metrics: MetricsRegistry;
   };
 }
 
@@ -79,6 +84,8 @@ export function composeOrs(config: OrsConfig): OrsComposition {
   const addRolePerson = new AddRolePersonUseCase(contexts, clock, bus);
   const listRolePersons = new ListRolePersonsUseCase(contexts);
 
+  const metrics = config.metrics ?? new MetricsRegistry();
+
   const router = buildRouter({
     createChainContext,
     addParty,
@@ -91,7 +98,10 @@ export function composeOrs(config: OrsConfig): OrsComposition {
     listRolePersons,
     contexts,
     pseudonymSalt: config.pseudonymSalt ?? 'bdi-default-salt',
+    ...(config.readinessProbes !== undefined ? { readinessProbes: config.readinessProbes } : {}),
+    ...(config.startupProbes !== undefined ? { startupProbes: config.startupProbes } : {}),
+    metrics,
   });
 
-  return { router, deps: { contexts, subscriptions, connectors, signer, bus } };
+  return { router, deps: { contexts, subscriptions, connectors, signer, bus, metrics } };
 }

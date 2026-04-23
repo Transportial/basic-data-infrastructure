@@ -5,3 +5,4 @@ export * from './logger.ts';
 export * from './metrics.ts';
 export * from './trace.ts';
 export * from './otlp.ts';
+export * from './http-middleware.ts';

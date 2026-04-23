@@ -137,6 +137,10 @@ export class InMemoryCertificateRepository implements CertificateRepository {
   async listRevoked(): Promise<ReadonlyArray<IssuedCertificate>> {
     return [...this.bySerial.values()].filter((c) => c.revokedAt);
   }
+
+  async listAll(): Promise<ReadonlyArray<IssuedCertificate>> {
+    return [...this.bySerial.values()];
+  }
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {
