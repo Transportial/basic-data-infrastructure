@@ -15,3 +15,10 @@ bun.lockb
 .bun/
 tmp/
 .cache/
+
+# Generated docs site output — build via `bun run docs:build`.
+# We keep sources (assets/, interactive/, *.html.tpl) and ignore the built pages.
+docs/site/index.html
+docs/site/architecture.html
+docs/site/docs/
+docs/site/api/

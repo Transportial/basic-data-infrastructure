@@ -16,11 +16,13 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "tsc --noEmit -p tsconfig.json",
     "clean": "rm -rf apps/*/dist packages/*/dist node_modules/.cache",
-    "openapi:generate": "bun run scripts/generate-openapi.ts"
+    "openapi:generate": "bun run scripts/generate-openapi.ts",
+    "docs:build": "bun run scripts/generate-openapi.ts && bun run scripts/build-docs.ts"
   },
   "devDependencies": {
     "@bdi/openapi": "workspace:*",
     "@types/bun": "^1.2.0",
+    "marked": "^18.0.2",
     "typescript": "^5.7.2"
   },
   "engines": {
