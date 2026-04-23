@@ -22,6 +22,7 @@
     "@bdi/crypto-ca": "workspace:*",
     "@bdi/events": "workspace:*",
     "@bdi/observability": "workspace:*",
+    "@bdi/identity": "workspace:*",
     "@bdi/testing": "workspace:*"
   },
   "devDependencies": {

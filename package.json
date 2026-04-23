@@ -13,8 +13,8 @@
     "build": "bun run --filter='*' build",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
-    "typecheck": "bun run --filter='*' typecheck",
-    "lint": "bun run --filter='*' lint",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
     "clean": "rm -rf apps/*/dist packages/*/dist node_modules/.cache",
     "openapi:generate": "bun run scripts/generate-openapi.ts"
   },

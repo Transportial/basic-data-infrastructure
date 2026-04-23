@@ -15,6 +15,7 @@ import {
   type BvadClaims,
 } from '@bdi/contracts';
 import type { ClockPort, EventBusPort, IdPort, SignerPort } from '../ports.ts';
+import { transformForPeer, type ClaimTransformRules } from '../claim-transform.ts';
 
 export interface FederatedAssociation {
   readonly peer_issuer: string;
@@ -58,6 +59,7 @@ export interface TokenExchangeInput {
 export interface TokenExchangeConfig {
   readonly issuer: string;
   readonly lifetimeSeconds?: number;
+  readonly claimRules?: ClaimTransformRules;
 }
 
 // RFC 8693 Token Exchange: accept a BVAD from a peer association, verify
@@ -105,7 +107,7 @@ export class TokenExchangeUseCase {
     }
 
     const lifetime = this.config.lifetimeSeconds ?? BVAD_LIFETIME_SECONDS;
-    const newClaims: BvadClaims & { 'https://bdi.nl/claims/federation'?: unknown } = {
+    const baseClaims: BvadClaims & { 'https://bdi.nl/claims/federation'?: unknown } = {
       iss: this.config.issuer,
       sub: claims.sub,
       aud: input.audience,
@@ -124,6 +126,16 @@ export class TokenExchangeUseCase {
       },
     };
 
+    // Apply per-peer transformations so operators can reshape the claims that
+    // leave ASR without changing the use-case code for each federation partner.
+    const transformed = this.config.claimRules
+      ? transformForPeer(
+          this.config.claimRules,
+          peer.peer_issuer,
+          baseClaims as unknown as Record<string, unknown>,
+        )
+      : baseClaims;
+    const newClaims = transformed as BvadClaims & { 'https://bdi.nl/claims/federation'?: unknown };
     const jws = await this.signer.signJwt(newClaims);
     await this.bus.publish('asr.federation.token-exchanged', peer.association_id, {
       peer_iss: peer.peer_issuer,

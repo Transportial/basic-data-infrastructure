@@ -449,6 +449,19 @@ export class InMemorySqlPort implements SqlPort {
         (r) => r.subject_type === params[0] && r.subject_id === params[1],
       ) as T[];
     }
+    if (/^SELECT \* FROM federation_peers WHERE peer_issuer = \$1$/i.test(normalised)) {
+      const rows = this.tables.get('federation_peers') ?? [];
+      return rows.filter((r) => r.peer_issuer === params[0]) as T[];
+    }
+    const delMatch = /^DELETE FROM (\w+) WHERE (\w+) = \$1$/i.exec(normalised);
+    if (delMatch) {
+      const table = delMatch[1]!;
+      const column = delMatch[2]!;
+      const rows = this.tables.get(table) ?? [];
+      const remaining = rows.filter((r) => r[column] !== params[0]);
+      this.tables.set(table, remaining);
+      return [] as T[];
+    }
     const insertMatch = /^INSERT INTO (\w+) \(([^)]+)\) VALUES \(([^)]+)\)/i.exec(normalised);
     if (insertMatch) {
       const table = insertMatch[1]!;
@@ -472,7 +485,8 @@ export class InMemorySqlPort implements SqlPort {
         values[col] = v;
       });
       const rows = this.tables.get(table) ?? [];
-      const existingIdx = rows.findIndex((r) => r.id === values.id);
+      const pkCol = table === 'federation_peers' ? 'peer_issuer' : 'id';
+      const existingIdx = rows.findIndex((r) => r[pkCol] === values[pkCol]);
       if (existingIdx >= 0) rows[existingIdx] = { ...rows[existingIdx], ...values };
       else rows.push(values);
       this.tables.set(table, rows);

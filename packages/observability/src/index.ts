@@ -6,3 +6,4 @@ export * from './metrics.ts';
 export * from './trace.ts';
 export * from './otlp.ts';
 export * from './http-middleware.ts';
+export * from './wrap-dispatch.ts';

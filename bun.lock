@@ -19,6 +19,7 @@
         "@bdi/crypto": "workspace:*",
         "@bdi/crypto-ca": "workspace:*",
         "@bdi/events": "workspace:*",
+        "@bdi/identity": "workspace:*",
         "@bdi/kernel": "workspace:*",
         "@bdi/observability": "workspace:*",
         "@bdi/testing": "workspace:*",
@@ -173,6 +174,14 @@
         "typescript": "^5.7.2",
       },
     },
+    "packages/identity": {
+      "name": "@bdi/identity",
+      "version": "0.1.0",
+      "dependencies": {
+        "@bdi/crypto": "workspace:*",
+        "@bdi/kernel": "workspace:*",
+      },
+    },
     "packages/kernel": {
       "name": "@bdi/kernel",
       "version": "0.1.0",
@@ -277,6 +286,8 @@
     "@bdi/crypto-ca": ["@bdi/crypto-ca@workspace:packages/crypto-ca"],
 
     "@bdi/events": ["@bdi/events@workspace:packages/events"],
+
+    "@bdi/identity": ["@bdi/identity@workspace:packages/identity"],
 
     "@bdi/kernel": ["@bdi/kernel@workspace:packages/kernel"],
 

@@ -3,6 +3,10 @@
 
 import { SystemClock } from '@bdi/kernel';
 import { MetricsRegistry } from '@bdi/observability';
+import { Scheduler } from '@bdi/events';
+import type { MemberRepository, ConnectorRepository, ApprovalRepository } from './application/ports.ts';
+import { RotateKeysUseCase } from './application/use-cases/rotate-keys.ts';
+import { RenewCertificatesUseCase } from './application/use-cases/renew-certificates.ts';
 import { StartOnboardingUseCase } from './application/use-cases/start-onboarding.ts';
 import { RunVerificationsUseCase } from './application/use-cases/run-verifications.ts';
 import { ActivateMemberUseCase } from './application/use-cases/activate-member.ts';
@@ -44,8 +48,10 @@ import { SystemUuidIds } from './infrastructure/id-port.ts';
 import { BuildMemberDescriptorUseCase } from './application/use-cases/member-descriptor.ts';
 import { buildRouter, type HealthProbe } from './interface/http/routes.ts';
 import type { Router } from './interface/http/router.ts';
+import { wrapAdminAuth } from './interface/http/auth-middleware.ts';
 import type { EventBusPort, VerificationSource } from './application/ports.ts';
 import { buildAcmeBundle, type AcmeBundle, type BuildAcmeOptions } from './infrastructure/acme.ts';
+import type { AuthnPort } from '@bdi/identity';
 
 export class InMemoryEventBus implements EventBusPort {
   readonly published: Array<{ type: string; associationId: string; body: unknown }> = [];
@@ -68,19 +74,29 @@ export interface AsrConfig {
   readonly jtiCache?: SeenJtiCache;
   readonly keystore?: Keystore;
   readonly journal?: IssuedTokensJournal;
+  readonly memberRepository?: MemberRepository;
+  readonly connectorRepository?: ConnectorRepository;
+  readonly approvalRepository?: ApprovalRepository;
   readonly acme?: Omit<BuildAcmeOptions, 'directoryBaseUrl'> & { directoryBaseUrl?: string };
   readonly metrics?: MetricsRegistry;
   readonly readinessProbes?: ReadonlyArray<HealthProbe>;
   readonly startupProbes?: ReadonlyArray<HealthProbe>;
+  readonly startScheduler?: boolean;
+  readonly keyRotationIntervalMs?: number;
+  readonly certRenewalIntervalMs?: number;
+  readonly associationId?: string;
+  readonly adminAuthn?: AuthnPort;
+  readonly adminRequiredRoles?: ReadonlyArray<string>;
 }
 
 export interface AsrComposition {
   readonly router: Router;
   readonly acme: AcmeBundle;
+  readonly scheduler: Scheduler;
   readonly deps: {
-    readonly members: InMemoryMemberRepository;
-    readonly connectors: InMemoryConnectorRepository;
-    readonly approvals: InMemoryApprovalRepository;
+    readonly members: MemberRepository;
+    readonly connectors: ConnectorRepository;
+    readonly approvals: ApprovalRepository;
     readonly signer: JwsSigner;
     readonly bus: InMemoryEventBus;
     readonly jtiCache: SeenJtiCache;
@@ -111,9 +127,13 @@ export async function composeAsr(config: AsrConfig): Promise<AsrComposition> {
   const journal = config.journal ?? new InMemoryTokensJournal();
   const federation = config.federation ?? new InMemoryFederationRegistry();
 
-  const members = new InMemoryMemberRepository();
-  const connectors = new InMemoryConnectorRepository(members);
-  const approvals = new InMemoryApprovalRepository();
+  const members = config.memberRepository ?? new InMemoryMemberRepository();
+  const connectors =
+    config.connectorRepository ??
+    (members instanceof InMemoryMemberRepository
+      ? new InMemoryConnectorRepository(members)
+      : new InMemoryConnectorRepository(members as unknown as InMemoryMemberRepository));
+  const approvals = config.approvalRepository ?? new InMemoryApprovalRepository();
 
   const sources: ReadonlyArray<VerificationSource> =
     config.verificationSources ??
@@ -159,6 +179,36 @@ export async function composeAsr(config: AsrConfig): Promise<AsrComposition> {
 
   const metrics = config.metrics ?? new MetricsRegistry();
 
+  // Scheduler for key rotation + certificate renewal notifications. Registered
+  // but not started by default — operators call `composition.scheduler.start()`
+  // when they want wall-clock ticking, or invoke jobs directly via `trigger`.
+  const scheduler = new Scheduler();
+  const associationId = config.associationId ?? 'unknown';
+  const rotateKeys = new RotateKeysUseCase(keystore, bus, associationId);
+  scheduler.register({
+    id: 'rotate-keys',
+    description: 'Rotate the association signing key',
+    intervalMs: config.keyRotationIntervalMs ?? 30 * 86_400_000,
+    async run() {
+      await rotateKeys.execute();
+    },
+  });
+  const renewCerts = new RenewCertificatesUseCase(
+    acme.services.certificates,
+    bus,
+    clock,
+    associationId,
+  );
+  scheduler.register({
+    id: 'renew-certificates',
+    description: 'Emit renewal events for certs nearing expiry',
+    intervalMs: config.certRenewalIntervalMs ?? 6 * 3600_000,
+    async run() {
+      await renewCerts.execute();
+    },
+  });
+  if (config.startScheduler) scheduler.start();
+
   const router = buildRouter({
     startOnboarding,
     runVerifications,
@@ -178,9 +228,17 @@ export async function composeAsr(config: AsrConfig): Promise<AsrComposition> {
     metrics,
   });
 
+  if (config.adminAuthn) {
+    wrapAdminAuth(router, {
+      authn: config.adminAuthn,
+      ...(config.adminRequiredRoles !== undefined ? { requiredRoles: config.adminRequiredRoles } : {}),
+    });
+  }
+
   return {
     router,
     acme,
+    scheduler,
     deps: { members, connectors, approvals, signer, bus, jtiCache, journal, keystore, federation, jwks, metrics },
   };
 }

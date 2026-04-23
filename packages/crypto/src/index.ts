@@ -3,6 +3,7 @@
 
 export * from './jws.ts';
 export * from './hmac-signer.ts';
+export * from './hsm-signer.ts';
 export * from './trustlist.ts';
 export * from './client-assertion.ts';
 export * from './keygen.ts';
