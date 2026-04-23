@@ -6,16 +6,22 @@ import { toHttpRequest } from './interface/http/routes.ts';
 
 export type ServerOptions = AsrConfig & { readonly port: number };
 
-export function createServer(options: ServerOptions): {
-  fetch: (req: Request) => Promise<Response>;
-  composition: ReturnType<typeof composeAsr>;
-} {
+export interface AsrServer {
+  readonly fetch: (req: Request) => Promise<Response>;
+  readonly composition: Awaited<ReturnType<typeof composeAsr>>;
+}
+
+export async function createServer(options: ServerOptions): Promise<AsrServer> {
   const { port, ...asrConfig } = options;
   void port;
-  const composition = composeAsr(asrConfig);
+  const composition = await composeAsr(asrConfig);
   return {
     composition,
     fetch: async (req: Request) => {
+      const url = new URL(req.url);
+      if (url.pathname === '/acme/directory' || url.pathname.startsWith('/acme/')) {
+        return composition.acme.handler.handle(req);
+      }
       let bodyJson: unknown = null;
       const ct = req.headers.get('content-type') ?? '';
       if (req.body && ct.includes('application/json')) {
@@ -51,15 +57,10 @@ export function createServer(options: ServerOptions): {
   };
 }
 
-// Bun.serve entry point — guarded so the module is importable without listening.
-if (
-  typeof Bun !== 'undefined' &&
-  typeof (globalThis as { BDI_NO_LISTEN?: boolean }).BDI_NO_LISTEN === 'undefined' &&
-  import.meta.main
-) {
+if (typeof Bun !== 'undefined' && import.meta.main) {
   const port = Number(process.env.PORT ?? 8080);
   const issuer = process.env.ASR_ISSUER ?? `http://localhost:${port}`;
-  const { fetch } = createServer({ port, issuer });
+  const { fetch } = await createServer({ port, issuer });
   Bun.serve({ port, fetch });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify({ level: 'info', msg: 'ASR listening', port, issuer }));

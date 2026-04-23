@@ -1,9 +1,37 @@
 // SPDX-License-Identifier: EUPL-1.2
 import { describe, test, expect, beforeEach } from 'bun:test';
+import { base64UrlEncode } from '@bdi/kernel';
+import { generateKeyPair, JwkSigner, publicJwk } from '@bdi/crypto';
 import { createServer } from '../../src/server.ts';
 import { AlwaysSuccessSource } from '../fixtures/fake-sources.ts';
 
-async function json(server: ReturnType<typeof createServer>, method: string, path: string, body?: unknown) {
+async function makeClientAssertion(opts: {
+  privateJwk: Parameters<typeof JwkSigner>[0];
+  clientId: string;
+  audience: string;
+}) {
+  const signer = new JwkSigner(opts.privateJwk, 'ES256');
+  const now = Math.floor(Date.now() / 1000);
+  const header = base64UrlEncode(
+    new TextEncoder().encode(JSON.stringify({ alg: 'ES256', typ: 'JWT' })),
+  );
+  const payload = base64UrlEncode(
+    new TextEncoder().encode(
+      JSON.stringify({
+        iss: opts.clientId,
+        sub: opts.clientId,
+        aud: opts.audience,
+        iat: now - 5,
+        exp: now + 600,
+        jti: crypto.randomUUID(),
+      }),
+    ),
+  );
+  const sig = await signer.sign(new TextEncoder().encode(`${header}.${payload}`));
+  return `${header}.${payload}.${base64UrlEncode(sig)}`;
+}
+
+async function json(server: Awaited<ReturnType<typeof createServer>>, method: string, path: string, body?: unknown) {
   const req = new Request(`http://localhost${path}`, {
     method,
     ...(body !== undefined
@@ -15,7 +43,7 @@ async function json(server: ReturnType<typeof createServer>, method: string, pat
   return { status: res.status, body: text ? JSON.parse(text) : null, raw: text, headers: res.headers };
 }
 
-async function form(server: ReturnType<typeof createServer>, path: string, fields: Record<string, string>) {
+async function form(server: Awaited<ReturnType<typeof createServer>>, path: string, fields: Record<string, string>) {
   const req = new Request(`http://localhost${path}`, {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -26,14 +54,10 @@ async function form(server: ReturnType<typeof createServer>, path: string, field
   return { status: res.status, body: text ? JSON.parse(text) : null };
 }
 
-let server: ReturnType<typeof createServer>;
+let server: Awaited<ReturnType<typeof createServer>>;
 
-beforeEach(() => {
-  server = createServer({ port: 0, issuer: 'https://asr.ctn.test' });
-  // Swap verification sources to deterministic fake ones for integration tests
-  const composition = server.composition;
-  // we mutate the run-verifications use case indirectly by re-building
-  void composition;
+beforeEach(async () => {
+  server = await createServer({ port: 0, issuer: 'https://asr.ctn.test' });
 });
 
 describe('ASR HTTP API', () => {
@@ -109,7 +133,7 @@ describe('ASR HTTP API', () => {
 
   test('approval flow (needs verifications done)', async () => {
     // Stub: install a successful verification source by using RunVerifications directly
-    const s = createServer({
+    const s = await createServer({
       port: 0,
       issuer: 'https://asr.ctn.test',
       verificationSources: [new AlwaysSuccessSource('KvK'), new AlwaysSuccessSource('VIES')],
@@ -198,7 +222,7 @@ describe('ASR HTTP API', () => {
   });
 
   test('POST /admin/connectors happy path', async () => {
-    const s = createServer({
+    const s = await createServer({
       port: 0,
       issuer: 'https://asr.ctn.test',
       verificationSources: [new AlwaysSuccessSource('KvK'), new AlwaysSuccessSource('VIES')],
@@ -313,11 +337,13 @@ describe('ASR HTTP API', () => {
 
 describe('issue BVAD end-to-end', () => {
   test('full flow: member activated → connector active → BVAD issued', async () => {
-    const s = createServer({
+    const s = await createServer({
       port: 0,
       issuer: 'https://asr.ctn.test',
       verificationSources: [new AlwaysSuccessSource('KvK'), new AlwaysSuccessSource('VIES')],
     });
+    const keyPair = await generateKeyPair('ES256');
+    const clientPublicJwk = publicJwk(keyPair.publicJwk);
     const create = JSON.parse(
       await (
         await s.fetch(
@@ -364,8 +390,8 @@ describe('issue BVAD end-to-end', () => {
             body: JSON.stringify({
               member_id: id,
               client_id: 'client-1',
-              jwk: { kty: 'OKP', crv: 'Ed25519', x: 'x' },
-              kid: 'k',
+              jwk: clientPublicJwk,
+              kid: keyPair.kid,
               cert_thumbprint: 'tp',
               cert_not_after: 9_999_999_999,
               callback_urls: ['https://example.com/hook'],
@@ -380,6 +406,12 @@ describe('issue BVAD end-to-end', () => {
     if (!con) throw new Error('setup');
     await s.composition.deps.connectors.save({ ...con, status: 'active' });
 
+    const assertion = await makeClientAssertion({
+      privateJwk: keyPair.privateJwk,
+      clientId: 'client-1',
+      audience: 'https://asr.ctn.test/oauth2/token',
+    });
+
     const tokenRes = await s.fetch(
       new Request('http://localhost/oauth2/token', {
         method: 'POST',
@@ -388,7 +420,7 @@ describe('issue BVAD end-to-end', () => {
           grant_type: 'client_credentials',
           client_id: 'client-1',
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-          client_assertion: 'aaa.bbb.ccc',
+          client_assertion: assertion,
           audience: 'urn:bdi:association:ctn',
         }).toString(),
       }),

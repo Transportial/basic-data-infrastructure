@@ -10,6 +10,12 @@ import { FetchHttpClient, RecordingHttpClient } from './infrastructure/http-clie
 import { InMemoryDeliveryRepository } from './infrastructure/delivery-repository.ts';
 import { VerifyIncomingUseCase } from './application/use-cases/verify-incoming.ts';
 import { DeliverWebhookUseCase } from './application/use-cases/deliver-webhook.ts';
+import {
+  InMemoryReplayCache,
+  ReceiveWebhookUseCase,
+  type ReplayCache,
+} from './application/use-cases/receive-webhook.ts';
+import { InMemoryValkey, ValkeyTokenBucket, type RateLimiter } from '@bdi/events';
 import { buildRouter } from './interface/http/routes.ts';
 import type { Router } from './interface/http/router.ts';
 import type { EventBusPort, HttpClientPort } from './application/ports.ts';
@@ -34,6 +40,10 @@ export interface ConConfig {
   readonly asrTrustlist?: InMemoryTrustlist;
   readonly orsTrustlist?: InMemoryTrustlist;
   readonly httpClient?: HttpClientPort;
+  readonly allowedIssuers?: ReadonlyArray<string>;
+  readonly replayCache?: ReplayCache;
+  readonly rateLimiter?: RateLimiter;
+  readonly rateLimit?: { limit: number; windowMs: number };
 }
 
 export interface ConComposition {
@@ -46,6 +56,8 @@ export interface ConComposition {
     readonly deliveries: InMemoryDeliveryRepository;
     readonly bus: InMemoryEventBus;
     readonly http: HttpClientPort;
+    readonly replayCache: ReplayCache;
+    readonly rateLimiter: RateLimiter;
   };
 }
 
@@ -78,6 +90,14 @@ export function composeCon(config: ConConfig): ConComposition {
   const pdp = new EmbeddedPdp(config.policies ?? DEFAULT_POLICIES);
   const deliveries = new InMemoryDeliveryRepository();
   const http = config.httpClient ?? new FetchHttpClient();
+  const replayCache = config.replayCache ?? new InMemoryReplayCache();
+  const rateLimiter =
+    config.rateLimiter ??
+    new ValkeyTokenBucket(new InMemoryValkey(), {
+      limit: config.rateLimit?.limit ?? 1000,
+      windowMs: config.rateLimit?.windowMs ?? 60_000,
+      prefix: 'con:rl:',
+    });
 
   const verifyIncoming = new VerifyIncomingUseCase(trustlist, orsTrust, pdp, clock, {
     asrIssuer: config.asrIssuer,
@@ -90,18 +110,31 @@ export function composeCon(config: ConConfig): ConComposition {
     associationId: config.associationId,
     rand: () => 0.5,
   });
+  const receiveWebhook = new ReceiveWebhookUseCase(
+    asrList,
+    replayCache,
+    clock,
+    bus,
+    {
+      allowedIssuers:
+        config.allowedIssuers ?? [config.asrIssuer, config.orsIssuer],
+    },
+    config.associationId,
+  );
 
   const router = buildRouter({
     verifyIncoming,
     deliverWebhook,
+    receiveWebhook,
     deliveries,
+    rateLimiter,
     idGenerator: () => crypto.randomUUID(),
     nowIso: () => clock.nowIso(),
   });
 
   return {
     router,
-    deps: { trustlist, orsTrust, asrList, orsList, deliveries, bus, http },
+    deps: { trustlist, orsTrust, asrList, orsList, deliveries, bus, http, replayCache, rateLimiter },
   };
 }
 

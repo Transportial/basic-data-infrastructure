@@ -14,18 +14,26 @@ describe('InMemoryEventBus', () => {
 });
 
 describe('composeAsr', () => {
-  test('builds a router with default (no sources)', () => {
-    const c = composeAsr({ issuer: 'https://asr' });
+  test('builds a router with default (no sources)', async () => {
+    const c = await composeAsr({ issuer: 'https://asr' });
     expect(c.router).toBeDefined();
+    expect(c.deps.signer).toBeDefined();
+    expect(c.deps.jwks).toBeDefined();
   });
 
-  test('honours KvK + VIES config', () => {
-    const c = composeAsr({
+  test('honours KvK + VIES config', async () => {
+    const c = await composeAsr({
       issuer: 'https://asr',
       kvk: { baseUrl: 'https://kvk', apiKey: 'k' },
       vies: { baseUrl: 'https://vies' },
     });
     expect(c.deps.signer).toBeDefined();
+  });
+
+  test('jwks returns active + next keys', async () => {
+    const c = await composeAsr({ issuer: 'https://asr' });
+    const keys = await c.deps.jwks.current();
+    expect(keys.length).toBeGreaterThanOrEqual(1);
   });
 });
 

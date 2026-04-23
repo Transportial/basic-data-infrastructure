@@ -16,6 +16,7 @@
         "@bdi/config": "workspace:*",
         "@bdi/contracts": "workspace:*",
         "@bdi/crypto": "workspace:*",
+        "@bdi/crypto-ca": "workspace:*",
         "@bdi/events": "workspace:*",
         "@bdi/kernel": "workspace:*",
         "@bdi/observability": "workspace:*",
@@ -32,6 +33,7 @@
         "@bdi/config": "workspace:*",
         "@bdi/contracts": "workspace:*",
         "@bdi/crypto": "workspace:*",
+        "@bdi/crypto-ca": "workspace:*",
         "@bdi/events": "workspace:*",
         "@bdi/kernel": "workspace:*",
         "@bdi/observability": "workspace:*",
@@ -80,6 +82,17 @@
       "name": "@bdi/crypto",
       "version": "0.1.0",
       "dependencies": {
+        "@bdi/kernel": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.7.2",
+      },
+    },
+    "packages/crypto-ca": {
+      "name": "@bdi/crypto-ca",
+      "version": "0.1.0",
+      "dependencies": {
+        "@bdi/crypto": "workspace:*",
         "@bdi/kernel": "workspace:*",
       },
       "devDependencies": {
@@ -143,6 +156,8 @@
     "@bdi/contracts": ["@bdi/contracts@workspace:packages/contracts"],
 
     "@bdi/crypto": ["@bdi/crypto@workspace:packages/crypto"],
+
+    "@bdi/crypto-ca": ["@bdi/crypto-ca@workspace:packages/crypto-ca"],
 
     "@bdi/events": ["@bdi/events@workspace:packages/events"],
 

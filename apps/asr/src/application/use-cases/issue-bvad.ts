@@ -19,6 +19,10 @@ import type {
   MemberRepository,
   SignerPort,
 } from '../ports.ts';
+import {
+  hashClaims,
+  type IssuedTokensJournal,
+} from './issued-tokens-journal.ts';
 
 export type IssueBvadError =
   | { type: 'unknown-client' }
@@ -43,6 +47,7 @@ export class IssueBvadUseCase {
     private readonly clock: ClockPort,
     private readonly ids: IdPort,
     private readonly bus: EventBusPort,
+    private readonly journal: IssuedTokensJournal,
     private readonly config: IssueBvadConfig,
   ) {}
 
@@ -87,6 +92,15 @@ export class IssueBvadUseCase {
     };
 
     const jws = await this.signer.signJwt(claims);
+    const claimsHash = await hashClaims(claims);
+    await this.journal.record({
+      jti: claims.jti,
+      token_type: 'bvad',
+      issued_to: connector.id,
+      issued_at: this.clock.nowIso(),
+      expires_at: new Date((now + lifetime) * 1000).toISOString(),
+      claims_hash: claimsHash,
+    });
     await this.bus.publish('asr.bvad.issued', member.association_id, {
       jti: claims.jti,
       sub: claims.sub,

@@ -17,6 +17,10 @@ import type {
 import type { IssueBvodUseCase } from '../../application/use-cases/issue-bvod.ts';
 import type { SubscribeUseCase } from '../../application/use-cases/subscribe.ts';
 import type { PublishContextEventUseCase } from '../../application/use-cases/publish-event.ts';
+import type {
+  AddRolePersonUseCase,
+  ListRolePersonsUseCase,
+} from '../../application/use-cases/manage-natural-persons.ts';
 import type { ChainContextRepository } from '../../application/ports.ts';
 
 export interface RouterDeps {
@@ -27,7 +31,10 @@ export interface RouterDeps {
   readonly issueBvod: IssueBvodUseCase;
   readonly subscribe: SubscribeUseCase;
   readonly publishEvent: PublishContextEventUseCase;
+  readonly addRolePerson: AddRolePersonUseCase;
+  readonly listRolePersons: ListRolePersonsUseCase;
   readonly contexts: ChainContextRepository;
+  readonly pseudonymSalt: string;
 }
 
 export function buildRouter(deps: RouterDeps): Router {
@@ -168,6 +175,42 @@ export function buildRouter(deps: RouterDeps): Router {
     return json(201, { subscription_id: r.value.subscriptionId });
   });
 
+  router.post('/contexts/:id/natural-persons', async (req) => {
+    const id = parseChainContextId(req.params.id!);
+    const body = (req.body as Record<string, unknown> | null) ?? {};
+    const actor = parseEuid(String(body.actor ?? ''));
+    const organisation = parseEuid(String(body.organisation_euid ?? actor.ok ? actor.value : ''));
+    const personRef = typeof body.person_ref === 'string' ? body.person_ref : null;
+    const role = typeof body.role === 'string' ? body.role : null;
+    if (!id.ok || !actor.ok || !organisation.ok || !personRef || !role) {
+      return json(400, { error: 'bad-input' });
+    }
+    const r = await deps.addRolePerson.execute({
+      chain_context_id: id.value,
+      actor: actor.value,
+      organisation_euid: organisation.value,
+      personRef,
+      role,
+      salt: deps.pseudonymSalt,
+      valid_from: typeof body.valid_from === 'string' ? body.valid_from : new Date().toISOString(),
+      valid_until: typeof body.valid_until === 'string' ? body.valid_until : null,
+    });
+    if (!r.ok) return json(mapStatusNatural(r.error.type), { error: r.error.type });
+    return json(201, { pseudonym: r.value.pseudonym });
+  });
+
+  router.get('/contexts/:id/natural-persons', async (req) => {
+    const id = parseChainContextId(req.params.id!);
+    const actor = parseEuid(req.headers['x-bdi-actor-euid'] ?? '');
+    if (!id.ok || !actor.ok) return json(400, { error: 'bad-input' });
+    const r = await deps.listRolePersons.execute({
+      chain_context_id: id.value,
+      actor: actor.value,
+    });
+    if (!r.ok) return json(mapStatusNatural(r.error.type), { error: r.error.type });
+    return json(200, { natural_persons: r.value });
+  });
+
   router.post('/contexts/:id/events', async (req) => {
     const id = parseChainContextId(req.params.id!);
     const body = (req.body as Record<string, unknown> | null) ?? {};
@@ -190,6 +233,19 @@ export function buildRouter(deps: RouterDeps): Router {
 
 function json(status: number, body: unknown): HttpResponse {
   return { status, headers: { 'content-type': 'application/json' }, body };
+}
+
+function mapStatusNatural(type: string): number {
+  switch (type) {
+    case 'context-not-found':
+      return 404;
+    case 'not-a-party':
+      return 403;
+    case 'duplicate-pseudonym':
+      return 409;
+    default:
+      return 400;
+  }
 }
 
 function mapStatus(type: string): number {

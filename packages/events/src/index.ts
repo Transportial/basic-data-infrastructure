@@ -3,3 +3,4 @@
 
 export * from './bus.ts';
 export * from './consumer.ts';
+export * from './valkey.ts';

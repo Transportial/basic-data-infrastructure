@@ -20,6 +20,7 @@ import { ChangeMemberStatusUseCase } from '../../src/application/use-cases/chang
 import { RegisterConnectorUseCase } from '../../src/application/use-cases/register-connector.ts';
 import { IssueBvadUseCase } from '../../src/application/use-cases/issue-bvad.ts';
 import { BuildTrustlistUseCase } from '../../src/application/use-cases/build-trustlist.ts';
+import { InMemoryTokensJournal } from '../../src/application/use-cases/issued-tokens-journal.ts';
 
 const euid = parseEuid('NL.NHR.12345678');
 if (!euid.ok) throw new Error('bad fixture');
@@ -697,6 +698,7 @@ describe('IssueBvadUseCase', () => {
     await connectors.save({ ...con, status: 'active' });
 
     const signer = new FakeSigner('asr-2026-01');
+    const journal = new InMemoryTokensJournal();
     const uc = new IssueBvadUseCase(
       members,
       connectors,
@@ -704,9 +706,10 @@ describe('IssueBvadUseCase', () => {
       clock,
       { newUuid: () => ids.next() },
       bus,
+      journal,
       { issuer: 'https://asr.ctn.bdi.nl' },
     );
-    return { uc, connectors, members, signer, bus };
+    return { uc, connectors, members, signer, bus, journal };
   }
 
   test('issues a JWS BVAD', async () => {

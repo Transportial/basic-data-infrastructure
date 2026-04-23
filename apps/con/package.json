@@ -19,6 +19,7 @@
     "@bdi/contracts": "workspace:*",
     "@bdi/config": "workspace:*",
     "@bdi/crypto": "workspace:*",
+    "@bdi/crypto-ca": "workspace:*",
     "@bdi/events": "workspace:*",
     "@bdi/observability": "workspace:*",
     "@bdi/policy": "workspace:*"

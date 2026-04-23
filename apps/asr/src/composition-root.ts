@@ -10,11 +10,31 @@ import { RegisterConnectorUseCase } from './application/use-cases/register-conne
 import { IssueBvadUseCase } from './application/use-cases/issue-bvad.ts';
 import { BuildTrustlistUseCase } from './application/use-cases/build-trustlist.ts';
 import {
+  AuthenticateClientUseCase,
+  InMemoryJtiCache,
+  type SeenJtiCache,
+} from './application/use-cases/authenticate-client.ts';
+import {
+  InMemoryKeystore,
+  InMemoryJwksService,
+  type JwksService,
+  type Keystore,
+} from './application/use-cases/jwks.ts';
+import {
+  TokenExchangeUseCase,
+  InMemoryFederationRegistry,
+  type FederationRegistry,
+} from './application/use-cases/token-exchange.ts';
+import {
+  InMemoryTokensJournal,
+  type IssuedTokensJournal,
+} from './application/use-cases/issued-tokens-journal.ts';
+import {
   InMemoryApprovalRepository,
   InMemoryConnectorRepository,
   InMemoryMemberRepository,
 } from './infrastructure/repositories/in-memory.ts';
-import { JwsSigner, randomSigningKey } from './infrastructure/crypto/signer.ts';
+import { JwsSigner } from './infrastructure/crypto/signer.ts';
 import {
   KvkVerificationSource,
   ViesVerificationSource,
@@ -23,6 +43,7 @@ import { SystemUuidIds } from './infrastructure/id-port.ts';
 import { buildRouter } from './interface/http/routes.ts';
 import type { Router } from './interface/http/router.ts';
 import type { EventBusPort, VerificationSource } from './application/ports.ts';
+import { buildAcmeBundle, type AcmeBundle, type BuildAcmeOptions } from './infrastructure/acme.ts';
 
 export class InMemoryEventBus implements EventBusPort {
   readonly published: Array<{ type: string; associationId: string; body: unknown }> = [];
@@ -36,32 +57,53 @@ export class InMemoryEventBus implements EventBusPort {
 
 export interface AsrConfig {
   readonly issuer: string;
-  readonly signingKid?: string;
-  readonly signingKey?: Uint8Array;
+  readonly tokenEndpointUrl?: string;
+  readonly signer?: JwsSigner;
   readonly verificationSources?: ReadonlyArray<VerificationSource>;
   readonly kvk?: { baseUrl: string; apiKey: string };
   readonly vies?: { baseUrl: string };
+  readonly federation?: FederationRegistry;
+  readonly jtiCache?: SeenJtiCache;
+  readonly keystore?: Keystore;
+  readonly journal?: IssuedTokensJournal;
+  readonly acme?: Omit<BuildAcmeOptions, 'directoryBaseUrl'> & { directoryBaseUrl?: string };
 }
 
 export interface AsrComposition {
   readonly router: Router;
+  readonly acme: AcmeBundle;
   readonly deps: {
     readonly members: InMemoryMemberRepository;
     readonly connectors: InMemoryConnectorRepository;
     readonly approvals: InMemoryApprovalRepository;
     readonly signer: JwsSigner;
     readonly bus: InMemoryEventBus;
+    readonly jtiCache: SeenJtiCache;
+    readonly journal: IssuedTokensJournal;
+    readonly keystore: Keystore;
+    readonly federation: FederationRegistry;
+    readonly jwks: JwksService;
   };
 }
 
-export function composeAsr(config: AsrConfig): AsrComposition {
+export async function composeAsr(config: AsrConfig): Promise<AsrComposition> {
   const clock = new SystemClock();
   const ids = new SystemUuidIds();
   const bus = new InMemoryEventBus();
-  const signer = new JwsSigner({
-    kid: config.signingKid ?? 'asr-2026-01',
-    key: config.signingKey ?? randomSigningKey(),
-  });
+  const signer = config.signer ?? (await JwsSigner.generate('ES256'));
+  const keystore =
+    config.keystore ??
+    new InMemoryKeystore({
+      kid: signer.kid,
+      alg: 'ES256',
+      publicJwk: signer.publicJwk,
+      status: 'active',
+      issuedAt: clock.nowIso(),
+    });
+  const jwks = new InMemoryJwksService(keystore);
+  const jtiCache = config.jtiCache ?? new InMemoryJtiCache();
+  const journal = config.journal ?? new InMemoryTokensJournal();
+  const federation = config.federation ?? new InMemoryFederationRegistry();
 
   const members = new InMemoryMemberRepository();
   const connectors = new InMemoryConnectorRepository(members);
@@ -79,11 +121,26 @@ export function composeAsr(config: AsrConfig): AsrComposition {
   const activateMember = new ActivateMemberUseCase(members, approvals, ids, clock, bus);
   const changeStatus = new ChangeMemberStatusUseCase(members, clock, bus);
   const registerConnector = new RegisterConnectorUseCase(members, connectors, ids, clock, bus);
-  const issueBvad = new IssueBvadUseCase(members, connectors, signer, clock, ids, bus, {
+  const issueBvad = new IssueBvadUseCase(members, connectors, signer, clock, ids, bus, journal, {
     issuer: config.issuer,
   });
   const buildTrustlist = new BuildTrustlistUseCase(connectors, signer, clock, {
     issuer: config.issuer,
+  });
+  const authenticateClient = new AuthenticateClientUseCase(connectors, clock, jtiCache);
+  const tokenExchange = new TokenExchangeUseCase(federation, signer, clock, ids, bus, {
+    issuer: config.issuer,
+  });
+
+  const tokenEndpointUrl = config.tokenEndpointUrl ?? `${config.issuer}/oauth2/token`;
+
+  const acme = await buildAcmeBundle({
+    directoryBaseUrl: config.acme?.directoryBaseUrl ?? config.issuer,
+    ...(config.acme?.termsOfService !== undefined ? { termsOfService: config.acme.termsOfService } : {}),
+    ...(config.acme?.website !== undefined ? { website: config.acme.website } : {}),
+    ...(config.acme?.caAlg !== undefined ? { caAlg: config.acme.caAlg } : {}),
+    ...(config.acme?.dnsResolver !== undefined ? { dnsResolver: config.acme.dnsResolver } : {}),
+    ...(config.acme?.useStaticVerifiers !== undefined ? { useStaticVerifiers: config.acme.useStaticVerifiers } : {}),
   });
 
   const router = buildRouter({
@@ -94,8 +151,16 @@ export function composeAsr(config: AsrConfig): AsrComposition {
     registerConnector,
     issueBvad,
     buildTrustlist,
+    authenticateClient,
+    tokenExchange,
+    jwks,
     members,
+    tokenEndpointUrl,
   });
 
-  return { router, deps: { members, connectors, approvals, signer, bus } };
+  return {
+    router,
+    acme,
+    deps: { members, connectors, approvals, signer, bus, jtiCache, journal, keystore, federation, jwks },
+  };
 }

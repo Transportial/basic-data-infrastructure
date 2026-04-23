@@ -4,13 +4,20 @@
 import { Router, type HttpRequest, type HttpResponse } from './router.ts';
 import type { VerifyIncomingUseCase } from '../../application/use-cases/verify-incoming.ts';
 import type { DeliverWebhookUseCase } from '../../application/use-cases/deliver-webhook.ts';
+import type { ReceiveWebhookUseCase } from '../../application/use-cases/receive-webhook.ts';
 import type { DeliveryRepository } from '../../application/ports.ts';
 import type { WebhookDelivery } from '../../domain/webhook.ts';
+
+export interface RateLimiterPort {
+  allow(key: string): Promise<boolean>;
+}
 
 export interface RouterDeps {
   readonly verifyIncoming: VerifyIncomingUseCase;
   readonly deliverWebhook: DeliverWebhookUseCase;
+  readonly receiveWebhook: ReceiveWebhookUseCase;
   readonly deliveries: DeliveryRepository;
+  readonly rateLimiter: RateLimiterPort;
   readonly idGenerator: () => string;
   readonly nowIso: () => string;
 }
@@ -25,6 +32,10 @@ export function buildRouter(deps: RouterDeps): Router {
   // reverse-proxy middleware. Callers supply the BVAD + BVOD via headers and
   // describe the action/resource pair they're attempting.
   router.post('/proxy/check', async (req) => {
+    const rlKey = req.headers['x-client-id'] ?? req.headers['authorization'] ?? 'anonymous';
+    if (!(await deps.rateLimiter.allow(`proxy:${rlKey}`))) {
+      return json(429, { error: 'rate-limited' });
+    }
     const body = (req.body as Record<string, unknown> | null) ?? {};
     const bvad =
       typeof body.bvad === 'string'
@@ -82,6 +93,27 @@ export function buildRouter(deps: RouterDeps): Router {
     const pending = await deps.deliveries.listPending();
     const dead = await deps.deliveries.listDead();
     return json(200, { pending, dead });
+  });
+
+  router.post('/webhooks/inbound', async (req) => {
+    const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
+    const jws = req.headers['bdi-signature'] ?? '';
+    const eventId = req.headers['bdi-event-id'] ?? '';
+    const eventType = req.headers['bdi-event-type'] ?? '';
+    const issuer = req.headers['bdi-issuer'] ?? '';
+    const r = await deps.receiveWebhook.execute({ jws, eventId, eventType, issuer, body });
+    if (!r.ok) {
+      const status =
+        r.error.type === 'signature-invalid' || r.error.type === 'missing-headers'
+          ? 400
+          : r.error.type === 'issuer-not-allowed'
+            ? 403
+            : r.error.type === 'replay-detected'
+              ? 409
+              : 400;
+      return json(status, { error: r.error.type });
+    }
+    return json(202, { accepted: true, event_id: eventId });
   });
 
   return router;

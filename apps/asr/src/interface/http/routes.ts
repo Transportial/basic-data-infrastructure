@@ -16,6 +16,9 @@ import type { ChangeMemberStatusUseCase } from '../../application/use-cases/chan
 import type { RegisterConnectorUseCase } from '../../application/use-cases/register-connector.ts';
 import type { IssueBvadUseCase } from '../../application/use-cases/issue-bvad.ts';
 import type { BuildTrustlistUseCase } from '../../application/use-cases/build-trustlist.ts';
+import type { AuthenticateClientUseCase } from '../../application/use-cases/authenticate-client.ts';
+import type { TokenExchangeUseCase } from '../../application/use-cases/token-exchange.ts';
+import type { JwksService } from '../../application/use-cases/jwks.ts';
 import type { MemberRepository } from '../../application/ports.ts';
 
 export interface RouterDeps {
@@ -26,7 +29,11 @@ export interface RouterDeps {
   readonly registerConnector: RegisterConnectorUseCase;
   readonly issueBvad: IssueBvadUseCase;
   readonly buildTrustlist: BuildTrustlistUseCase;
+  readonly authenticateClient: AuthenticateClientUseCase;
+  readonly tokenExchange: TokenExchangeUseCase;
+  readonly jwks: JwksService;
   readonly members: MemberRepository;
+  readonly tokenEndpointUrl: string;
 }
 
 export function buildRouter(deps: RouterDeps): Router {
@@ -132,17 +139,60 @@ export function buildRouter(deps: RouterDeps): Router {
 
   router.post('/oauth2/token', async (req) => {
     const body = req.body as Record<string, unknown>;
+    const grantType = typeof body?.grant_type === 'string' ? body.grant_type : '';
+    if (grantType === 'urn:ietf:params:oauth:grant-type:token-exchange') {
+      const r = await deps.tokenExchange.execute({
+        subjectToken: typeof body?.subject_token === 'string' ? body.subject_token : '',
+        audience: typeof body?.audience === 'string' ? body.audience : '',
+        scope: typeof body?.scope === 'string' ? body.scope : undefined,
+      });
+      if (!r.ok) return json(400, { error: 'invalid_request', error_description: r.error.type });
+      return json(200, {
+        access_token: r.value,
+        issued_token_type: 'urn:ietf:params:oauth:token-type:jwt',
+        token_type: 'Bearer',
+        expires_in: 600,
+      });
+    }
+
     const validated = validateClientCredentialsRequest(body);
     if (!validated.ok) {
       return json(400, { error: 'invalid_request' });
     }
     const audience = typeof body?.audience === 'string' ? body.audience : validated.value.client_id;
+    const auth = await deps.authenticateClient.execute({
+      clientId: validated.value.client_id,
+      clientAssertion: validated.value.client_assertion,
+      expectedAudience: deps.tokenEndpointUrl,
+    });
+    if (!auth.ok) {
+      return json(401, {
+        error: 'invalid_client',
+        error_description: auth.error.type,
+      });
+    }
     const r = await deps.issueBvad.execute({
       clientId: validated.value.client_id,
       audience,
     });
     if (!r.ok) return json(401, { error: 'invalid_client', error_description: r.error.type });
     return json(200, { access_token: r.value, token_type: 'Bearer', expires_in: 600 });
+  });
+
+  router.get('/.well-known/jwks.json', async () => {
+    const keys = await deps.jwks.current();
+    return json(200, { keys });
+  });
+
+  router.get('/.well-known/oauth-authorization-server', async () => {
+    return json(200, {
+      issuer: deps.tokenEndpointUrl.replace(/\/oauth2\/token$/, ''),
+      token_endpoint: deps.tokenEndpointUrl,
+      token_endpoint_auth_methods_supported: ['private_key_jwt'],
+      token_endpoint_auth_signing_alg_values_supported: ['ES256', 'ES384', 'EdDSA', 'PS256'],
+      grant_types_supported: ['client_credentials', 'urn:ietf:params:oauth:grant-type:token-exchange'],
+      jwks_uri: deps.tokenEndpointUrl.replace(/\/oauth2\/token$/, '/.well-known/jwks.json'),
+    });
   });
 
   router.get('/.well-known/bdi/trustlist/:association', async (req) => {

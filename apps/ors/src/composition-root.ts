@@ -12,6 +12,10 @@ import { IssueBvodUseCase } from './application/use-cases/issue-bvod.ts';
 import { SubscribeUseCase } from './application/use-cases/subscribe.ts';
 import { PublishContextEventUseCase } from './application/use-cases/publish-event.ts';
 import {
+  AddRolePersonUseCase,
+  ListRolePersonsUseCase,
+} from './application/use-cases/manage-natural-persons.ts';
+import {
   InMemoryChainContextRepository,
   InMemorySubscriptionRepository,
 } from './infrastructure/repositories/in-memory.ts';
@@ -36,6 +40,7 @@ export interface OrsConfig {
   readonly issuer: string;
   readonly signingKid?: string;
   readonly signingKey?: Uint8Array;
+  readonly pseudonymSalt?: string;
 }
 
 export interface OrsComposition {
@@ -71,6 +76,8 @@ export function composeOrs(config: OrsConfig): OrsComposition {
   });
   const subscribe = new SubscribeUseCase(contexts, subscriptions, connectors, ids, clock, bus);
   const publishEvent = new PublishContextEventUseCase(contexts, subscriptions, clock, bus);
+  const addRolePerson = new AddRolePersonUseCase(contexts, clock, bus);
+  const listRolePersons = new ListRolePersonsUseCase(contexts);
 
   const router = buildRouter({
     createChainContext,
@@ -80,7 +87,10 @@ export function composeOrs(config: OrsConfig): OrsComposition {
     issueBvod,
     subscribe,
     publishEvent,
+    addRolePerson,
+    listRolePersons,
     contexts,
+    pseudonymSalt: config.pseudonymSalt ?? 'bdi-default-salt',
   });
 
   return { router, deps: { contexts, subscriptions, connectors, signer, bus } };
