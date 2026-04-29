@@ -10,7 +10,7 @@ import {
   validatePublicJwk,
   type Jwk,
   type Result,
-} from '@bdi/kernel';
+} from '@transportial/kernel';
 import type {
   AcmeAccount,
   AcmeOrder,

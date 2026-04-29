@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { Jwk } from '@bdi/kernel';
+import type { Jwk } from '@transportial/kernel';
 
 export type AccountStatus = 'valid' | 'deactivated' | 'revoked';
 export type OrderStatus = 'pending' | 'ready' | 'processing' | 'valid' | 'invalid';

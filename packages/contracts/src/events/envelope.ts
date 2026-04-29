@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { ok, type Result } from '@bdi/kernel';
+import { ok, type Result } from '@transportial/kernel';
 import { fail, isObject, type ValidationIssue } from '../validator.ts';
 
 export type Service = 'asr' | 'ors' | 'con';

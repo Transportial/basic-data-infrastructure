@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { generateKeyPair } from '@bdi/crypto';
+import { generateKeyPair } from '@transportial/crypto';
 import { JwkCaSigner } from '../src/ca-signer.ts';
 import { InMemoryCertificateRepository } from '../src/acme/repositories.ts';
 import {

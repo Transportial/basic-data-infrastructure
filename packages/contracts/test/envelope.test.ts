@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 OR LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { ok, err } from '@bdi/kernel';
+import { ok, err } from '@transportial/kernel';
 import {
   validateEnvelope,
   AsrEventTypes,

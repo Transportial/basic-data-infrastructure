@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { Jwk } from '@bdi/kernel';
-import { base64UrlDecode } from '@bdi/kernel';
+import type { Jwk } from '@transportial/kernel';
+import { base64UrlDecode } from '@transportial/kernel';
 import {
   bitString,
   integer,

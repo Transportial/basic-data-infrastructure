@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 OR LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { err, ok } from '@bdi/kernel';
+import { err, ok } from '@transportial/kernel';
 import { combineIssues, isObject, issue, fail } from '../src/validator.ts';
 
 describe('validator helpers', () => {

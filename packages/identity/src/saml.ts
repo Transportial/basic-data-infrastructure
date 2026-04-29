@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type Result } from '@bdi/kernel';
+import { err, ok, type Result } from '@transportial/kernel';
 import type { AuthnError, Principal } from './authn.ts';
 
 // Minimal SAML 2.0 assertion validator sufficient for eHerkenning /

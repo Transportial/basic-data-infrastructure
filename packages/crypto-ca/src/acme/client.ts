@@ -5,8 +5,8 @@ import {
   base64UrlDecode,
   base64UrlEncode,
   type Jwk,
-} from '@bdi/kernel';
-import { JwkSigner, publicJwk, type KeyAlg } from '@bdi/crypto';
+} from '@transportial/kernel';
+import { JwkSigner, publicJwk, type KeyAlg } from '@transportial/crypto';
 
 // A complete ACME client able to talk to any RFC 8555-compliant server. It
 // owns its account key, signs protected JWS payloads, solves http-01 and
@@ -115,7 +115,7 @@ export class AcmeClient {
 
   async newAccount(opts: NewAccountOptions): Promise<string> {
     const dir = await this.getDirectory();
-    const { JwkSigner: JwkSignerCtor, generateKeyPair: genKey } = await import('@bdi/crypto');
+    const { JwkSigner: JwkSignerCtor, generateKeyPair: genKey } = await import('@transportial/crypto');
     const pair = await genKey(this.alg);
     this.accountPrivateJwk = pair.privateJwk;
     this.accountJwk = publicJwk(pair.publicJwk);
@@ -305,7 +305,7 @@ function bdiAlgToAcmeAlg(alg: KeyAlg): string {
 }
 
 export async function keyAuthorization(jwk: Jwk, token: string): Promise<string> {
-  const { jwkThumbprint } = await import('@bdi/kernel');
+  const { jwkThumbprint } = await import('@transportial/kernel');
   const thumb = await jwkThumbprint(jwk);
   return `${token}.${thumb}`;
 }

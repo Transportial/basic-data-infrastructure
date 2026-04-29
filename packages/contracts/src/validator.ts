@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type Result } from '@bdi/kernel';
+import { err, ok, type Result } from '@transportial/kernel';
 
 // We intentionally avoid adding a runtime validation library dependency to keep
 // the contracts package self-contained. These validators are tuned to the BDI

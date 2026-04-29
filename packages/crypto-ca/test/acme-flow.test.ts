@@ -5,12 +5,12 @@ import {
   base64UrlEncode,
   jwkThumbprint,
   type Jwk,
-} from '@bdi/kernel';
+} from '@transportial/kernel';
 import {
   generateKeyPair,
   JwkSigner,
   publicJwk,
-} from '@bdi/crypto';
+} from '@transportial/crypto';
 import {
   buildAcmeHttp,
   InMemoryAccountRepository,

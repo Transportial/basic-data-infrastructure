@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { Jwk } from '@bdi/kernel';
-import { JwkSigner, type KeyAlg } from '@bdi/crypto';
+import type { Jwk } from '@transportial/kernel';
+import { JwkSigner, type KeyAlg } from '@transportial/crypto';
 import { OID } from './oid.ts';
 import type { CaSigner } from './acme/server.ts';
 

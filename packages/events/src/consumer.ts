@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { EventEnvelope } from '@bdi/contracts';
+import type { EventEnvelope } from '@transportial/contracts';
 
 export type ConsumerHandler<T = unknown> = (envelope: EventEnvelope<T>) => Promise<void>;
 

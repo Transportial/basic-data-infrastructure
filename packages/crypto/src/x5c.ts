@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { base64UrlEncode } from '@bdi/kernel';
+import { base64UrlEncode } from '@transportial/kernel';
 
 // Minimal x5c chain verification: each certificate must be base64url-encoded
 // DER, and the chain terminates at a cert whose SubjectPublicKeyInfo's

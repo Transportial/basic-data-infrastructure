@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { EventEnvelope, Service } from '@bdi/contracts';
+import type { EventEnvelope, Service } from '@transportial/contracts';
 import type { EventBus, EventSink, ProducerOptions } from './bus.ts';
 
 // Narrow abstraction of the RESP commands we use. Implementations can wrap a

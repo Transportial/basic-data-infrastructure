@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import type { EventEnvelope } from '@bdi/contracts';
+import type { EventEnvelope } from '@transportial/contracts';
 import { InMemoryConsumer, classifyDelivery, serialiseError } from '../src/consumer.ts';
 
 function mkEnvelope(body: unknown): EventEnvelope {

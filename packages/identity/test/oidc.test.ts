@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { base64UrlEncode } from '@bdi/kernel';
-import { JwkSigner, generateKeyPair, publicJwk } from '@bdi/crypto';
+import { base64UrlEncode } from '@transportial/kernel';
+import { JwkSigner, generateKeyPair, publicJwk } from '@transportial/crypto';
 import { OidcAccessTokenVerifier } from '../src/oidc.ts';
 
 type FetcherResponses = Record<string, unknown>;

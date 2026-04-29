@@ -11,7 +11,7 @@ import {
   base64UrlEncode,
   base64UrlDecode,
   type BdiJwsHeader,
-} from '@bdi/kernel';
+} from '@transportial/kernel';
 
 export type JwsError =
   | { type: 'malformed' }

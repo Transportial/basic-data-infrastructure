@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { base64UrlEncode } from '@bdi/kernel';
+import { base64UrlEncode } from '@transportial/kernel';
 import { verifyX5cChain, computeCertThumbprintSha256 } from '../src/x5c.ts';
 
 // Build a synthetic "certificate" DER that is just a SEQUENCE containing a

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { BDI_PROFILE_VERSION_HEADER, base64UrlEncode } from '@bdi/kernel';
+import { BDI_PROFILE_VERSION_HEADER, base64UrlEncode } from '@transportial/kernel';
 import { compactSign, compactVerify, type RawSigner } from '../src/jws.ts';
 import { HmacSigner } from '../src/hmac-signer.ts';
 import { InMemoryTrustlist } from '../src/trustlist.ts';

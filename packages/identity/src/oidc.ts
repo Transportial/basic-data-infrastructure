@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type Jwk, type Result } from '@bdi/kernel';
-import { base64UrlDecode } from '@bdi/kernel';
-import { JwkSigner, type KeyAlg } from '@bdi/crypto';
+import { err, ok, type Jwk, type Result } from '@transportial/kernel';
+import { base64UrlDecode } from '@transportial/kernel';
+import { JwkSigner, type KeyAlg } from '@transportial/crypto';
 import type { AuthnError, AuthnPort, Principal } from './authn.ts';
 
 // OIDC access-token verifier used for Keycloak (and any other Authorization

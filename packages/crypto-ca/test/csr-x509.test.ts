@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { base64UrlDecode, type Jwk } from '@bdi/kernel';
-import { generateKeyPair, JwkSigner, publicJwk } from '@bdi/crypto';
+import { base64UrlDecode, type Jwk } from '@transportial/kernel';
+import { generateKeyPair, JwkSigner, publicJwk } from '@transportial/crypto';
 import {
   attachSignature,
   buildTbsCertificate,

@@ -8,7 +8,7 @@ import {
   ValkeyStreamSink,
   ValkeyTokenBucket,
 } from '../src/valkey.ts';
-import type { EventEnvelope } from '@bdi/contracts';
+import type { EventEnvelope } from '@transportial/contracts';
 
 describe('InMemoryValkey KV', () => {
   test('set + get', async () => {

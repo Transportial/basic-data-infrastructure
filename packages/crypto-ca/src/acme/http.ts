@@ -7,8 +7,8 @@ import {
   jwkThumbprint,
   validatePublicJwk,
   type Jwk,
-} from '@bdi/kernel';
-import { InMemoryTrustlist, JwkSigner } from '@bdi/crypto';
+} from '@transportial/kernel';
+import { InMemoryTrustlist, JwkSigner } from '@transportial/crypto';
 import type {
   AcmeServices,
 } from './server.ts';

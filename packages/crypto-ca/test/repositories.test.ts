@@ -9,7 +9,7 @@ import {
   InMemoryOrderRepository,
 } from '../src/acme/repositories.ts';
 import type { AcmeAccount, AcmeOrder, Authorization, IssuedCertificate } from '../src/acme/types.ts';
-import { generateKeyPair, publicJwk } from '@bdi/crypto';
+import { generateKeyPair, publicJwk } from '@transportial/crypto';
 
 describe('InMemoryAccountRepository', () => {
   test('save + find by id and thumbprint', async () => {

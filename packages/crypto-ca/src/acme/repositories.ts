@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { jwkThumbprint } from '@bdi/kernel';
+import { jwkThumbprint } from '@transportial/kernel';
 import type {
   AccountRepository,
   AuthorizationRepository,

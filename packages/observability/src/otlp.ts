@@ -60,7 +60,7 @@ export class OtlpExporter {
           resource,
           scopeSpans: [
             {
-              scope: { name: '@bdi/observability', version: '0.1.0' },
+              scope: { name: '@transportial/observability', version: '0.1.0' },
               spans: spans.map((s) => ({
                 traceId: hexToBase64(s.context.traceId),
                 spanId: hexToBase64(s.context.spanId),
@@ -130,7 +130,7 @@ export class OtlpExporter {
         {
           resource,
           scopeMetrics: [
-            { scope: { name: '@bdi/observability', version: '0.1.0' }, metrics },
+            { scope: { name: '@transportial/observability', version: '0.1.0' }, metrics },
           ],
         },
       ],
