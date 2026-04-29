@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { parseYaml, type YamlValue } from '@bdi/config';
+import { parseYaml, type YamlValue } from '@transportial/config';
 
 // Per-peer claim transformation rules. Used by TokenExchangeUseCase to
 // convert a peer's incoming BVAD claims into the locally-re-issued shape,

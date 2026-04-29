@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { BvadClaims } from '@bdi/contracts';
-import { compactVerify, type TrustlistResolver } from '@bdi/crypto';
-import { validateBvadClaims } from '@bdi/contracts';
+import type { BvadClaims } from '@transportial/contracts';
+import { compactVerify, type TrustlistResolver } from '@transportial/crypto';
+import { validateBvadClaims } from '@transportial/contracts';
 import type { TrustlistPort } from '../application/ports.ts';
 
 // The trustlist store is the local cache of the signed trustlist published by

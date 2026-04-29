@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { FakeClock } from '@bdi/kernel';
+import { FakeClock } from '@transportial/kernel';
 import {
   BVAD_CLAIM_ASSOCIATION,
   BVAD_CLAIM_ASSURANCE,
@@ -8,14 +8,14 @@ import {
   BVAD_CLAIM_ORGANISATION,
   BVAD_CLAIM_STATUS,
   type BvadClaims,
-} from '@bdi/contracts';
-import { DeterministicUuidGenerator, FakeEventBus } from '@bdi/testing';
+} from '@transportial/contracts';
+import { DeterministicUuidGenerator, FakeEventBus } from '@transportial/testing';
 import { JwsSigner } from '../../src/infrastructure/crypto/signer.ts';
 import {
   TokenExchangeUseCase,
   InMemoryFederationRegistry,
 } from '../../src/application/use-cases/token-exchange.ts';
-import { compactSign, HmacSigner } from '@bdi/crypto';
+import { compactSign, HmacSigner } from '@transportial/crypto';
 
 function mkPeer() {
   const key = new Uint8Array(32);

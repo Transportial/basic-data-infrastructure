@@ -1,16 +1,16 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { EventEnvelope } from '@bdi/contracts';
-import type { InMemoryConsumer } from '@bdi/events';
-import { InMemoryConsumer as Consumer } from '@bdi/events';
+import type { EventEnvelope } from '@transportial/contracts';
+import type { InMemoryConsumer } from '@transportial/events';
+import { InMemoryConsumer as Consumer } from '@transportial/events';
 import type { TrustlistStore } from '../../infrastructure/trustlist-store.ts';
 
 // Wire-up point for CON's reaction to cross-service events. The constructor
 // accepts any number of upstream streams; each event type has a dedicated
 // handler that mutates the local trustlist cache, invalidates BVOD cache
 // entries, or rotates configuration. Built on top of the in-memory consumer
-// from @bdi/events so tests can drive it deterministically, but production
+// from @transportial/events so tests can drive it deterministically, but production
 // plugs in a ValkeyStreamConsumer via the same interface.
 
 export interface BvodCache {

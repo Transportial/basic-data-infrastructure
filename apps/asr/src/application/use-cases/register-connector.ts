@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import {
@@ -8,7 +8,7 @@ import {
   validatePublicJwk,
   type Jwk,
   type Result,
-} from '@bdi/kernel';
+} from '@transportial/kernel';
 import { validateCallbackUrls } from '../../domain/model/connector.ts';
 import type { Connector } from '../../domain/model/connector.ts';
 import type {

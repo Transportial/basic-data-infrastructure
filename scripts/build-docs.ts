@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 // Static-site generator for the BDI documentation at docs/site/.
@@ -89,7 +89,7 @@ function header(activeHref: string, depth: number): string {
 
 function footer(): string {
   return `<footer class="site-footer">
-    <span>EUPL 1.2 · Transportial &amp; contributors · <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a></span>
+    <span>PolyForm Shield 1.0.0 · Transportial &amp; contributors · <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a></span>
   </footer>`;
 }
 

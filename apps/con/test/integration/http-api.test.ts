@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
 import {
   BVAD_CLAIM_ASSOCIATION,
@@ -12,8 +12,8 @@ import {
   BVOD_CLAIM_SCOPE,
   type BvadClaims,
   type BvodClaims,
-} from '@bdi/contracts';
-import { HmacSigner, InMemoryTrustlist, compactSign } from '@bdi/crypto';
+} from '@transportial/contracts';
+import { HmacSigner, InMemoryTrustlist, compactSign } from '@transportial/crypto';
 import { createServer } from '../../src/server.ts';
 import { RecordingHttpClient } from '../../src/infrastructure/http-client.ts';
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import {
@@ -11,8 +11,8 @@ import {
   type KeyAlg,
   generateKeyPair,
   publicJwk,
-} from '@bdi/crypto';
-import type { BdiAllowedAlg, Jwk } from '@bdi/kernel';
+} from '@transportial/crypto';
+import type { BdiAllowedAlg, Jwk } from '@transportial/kernel';
 import type { SignerPort } from '../../application/ports.ts';
 
 export class JwsSigner implements SignerPort {

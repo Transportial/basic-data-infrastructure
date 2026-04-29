@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { parseAssociationId, parseChainContextId, parseEuid } from '@bdi/kernel';
+import { parseAssociationId, parseChainContextId, parseEuid } from '@transportial/kernel';
 import { createChainContext } from '../../src/domain/model/chain-context.ts';
 import {
   activateContext,
@@ -16,7 +16,7 @@ import {
 } from '../../src/domain/model/context-transitions.ts';
 import { deactivate, validateSubscription } from '../../src/domain/model/subscription.ts';
 import { pseudonymise } from '../../src/domain/pseudonym.ts';
-import { parseConnectorId } from '@bdi/kernel';
+import { parseConnectorId } from '@transportial/kernel';
 
 const assoc = parseAssociationId('ctn');
 if (!assoc.ok) throw new Error('setup');

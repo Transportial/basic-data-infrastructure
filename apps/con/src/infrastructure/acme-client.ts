@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import {
   AcmeClient,
   type AcmeHttpTransport,
   type ChallengeSolver,
-} from '@bdi/crypto-ca';
+} from '@transportial/crypto-ca';
 
 // A CON-side ACME client convenience wrapper. The solver is pluggable: a
 // production connector publishes the key-authorization file behind its own

@@ -1,34 +1,56 @@
 # Contributing
 
-Thanks for considering a contribution. This project aims for an auditable,
-production-grade reference implementation. Please read the expectations
-below before opening a PR.
+Thanks for being here. This project is source-available under the
+**PolyForm Shield License 1.0.0** (with `packages/contracts` additionally
+under Apache 2.0), and contributions of every size — typo fixes, new
+adapters, fresh ADRs, "this surprised me" issues — are genuinely welcome.
 
-## Ground rules
+By submitting a contribution you agree your changes are licensed under
+the same terms as the file(s) they touch.
 
-- **Respect the layers.** `domain` must never import from `infrastructure`.
-  Use-cases depend on ports; adapters implement them.
+The goal of the codebase is to be an *auditable*, production-grade
+reference for the BDI protocol. Every choice in this guide flows from
+that single goal: the code should be obvious enough that a stranger can
+reason about its security properties without a tour.
+
+## House rules
+
+A short list. None of these are arbitrary; each one prevents a class of
+bug we'd rather not have to fix.
+
+- **Respect the layers.** `domain` must never import from
+  `infrastructure`. Use cases depend on ports; adapters implement them.
+  If the layering feels like it's getting in your way, please raise it
+  in an issue — that's almost always a sign the *port* is shaped wrong.
 - **No `any`, no `!`.** If the types aren't cooperating, adjust the types
   rather than escape them. Use `Result<T, E>` for expected failure modes.
-- **Tests before merge.** We aim for 100% line coverage on our own source.
-  Every branch of every use case must have a test.
-- **Protocol shapes are in `@bdi/contracts`.** Don't re-declare token or
-  envelope shapes in a service. If a new claim is needed, add it there.
-- **Errors are typed discriminated unions.** No `throw` in the domain; use
-  `err({ type: 'reason' })`.
+- **Tests before merge.** We aim for 100% line coverage on our own
+  source. Every branch of every use case needs a test. This isn't
+  cargo-culting — it's how we keep the protocol from drifting under
+  refactors.
+- **Protocol shapes live in `@transportial/contracts`.** Don't re-declare token
+  or envelope shapes inside a service. If a new claim is needed, add it
+  there so all three services see it at once.
+- **Errors are typed discriminated unions.** No `throw` in the domain
+  layer; use `err({ type: 'reason' })`. Throwing makes flow control
+  invisible and is the single biggest source of "wait, that could
+  happen?" bugs.
 
 ## Branching
 
-- `main` is always deployable; protected, requires green CI and review.
-- Topic branches: `feat/<scope>-<desc>`, `fix/<scope>-<desc>`,
-  `docs/<desc>`, `chore/<desc>`.
-- Scopes match the package/app directory: `asr`, `ors`, `con`, `kernel`,
-  `contracts`, `crypto`, `events`, `policy`, `observability`, `testing`,
-  `config`, `infra`, `docs`.
+- `main` is always deployable; it's protected, requires green CI and
+  review.
+- Topic branches use the format `feat/<scope>-<desc>`,
+  `fix/<scope>-<desc>`, `docs/<desc>`, `chore/<desc>`.
+- Scopes match the package or app directory: `asr`, `ors`, `con`,
+  `kernel`, `contracts`, `crypto`, `events`, `policy`, `observability`,
+  `testing`, `config`, `infra`, `docs`.
 
 ## Commit messages
 
-Conventional Commits, example:
+We use Conventional Commits — they're a small constraint that pays off
+when you're scrolling through `git log` looking for the change that broke
+something.
 
 ```
 feat(asr): add GLEIF verification source
@@ -38,18 +60,26 @@ when an LEI is provided. Falls back to partial outcome on non-200 from
 the GLEIF data source.
 ```
 
-## Code review checklist
+## What we look for in review
+
+A short checklist a reviewer (or you, before you ask for review) can run
+through:
 
 - [ ] Dependency direction respected
 - [ ] No `any`, `as`, or non-null assertions without a short justification
-- [ ] Added tests cover both success and each `err` case of new `Result`s
-- [ ] Any new event type has a schema in `@bdi/contracts` and is wired
+- [ ] Tests cover both the success path and each `err` case of any new
+      `Result`
+- [ ] Any new event type has a schema in `@transportial/contracts` and is wired
       through an idempotent handler
-- [ ] Environment variables registered in `@bdi/config`
-- [ ] ADR added for any non-trivial design decision
-- [ ] Documentation updated (`README`, `ARCHITECTURE`, runbook or ADR)
+- [ ] Environment variables registered in `@transportial/config`
+- [ ] An ADR added for any non-trivial design decision
+- [ ] Documentation updated where relevant (`README`, `ARCHITECTURE`,
+      a runbook, or an ADR)
 
 ## Running locally
+
+If you haven't already, [SETUP.md](SETUP.md) is the friendlier walk-through.
+The short version:
 
 ```bash
 bun install
@@ -60,27 +90,33 @@ bun test --coverage   # coverage report
 Per-package:
 
 ```bash
-bun test --filter @bdi/asr
-bun run --filter @bdi/asr dev   # watch-mode server
+bun test --filter @transportial/asr
+bun run --filter @transportial/asr dev   # watch-mode server
 ```
 
 ## Writing tests
 
-- Domain rules: unit tests using fake clocks and deterministic ids.
-- Application use cases: in-memory repositories + `FakeEventBus` +
+A few patterns that have worked well for us — feel free to follow them or
+deviate when something fits better:
+
+- **Domain rules**: unit tests using fake clocks and deterministic ids.
+- **Application use cases**: in-memory repositories + `FakeEventBus` +
   `FakeClock` + `DeterministicUuidGenerator`.
-- HTTP endpoints: call `server.fetch(new Request(...))` directly — no
-  network needed.
-- External adapters (KvK/VIES/GLEIF/KBO): mock the `Fetcher` port.
-- CON token verification: build real JWS tokens with `@bdi/crypto`.
+- **HTTP endpoints**: call `server.fetch(new Request(...))` directly —
+  no network needed, and no test server to start and stop.
+- **External adapters** (KvK / VIES / GLEIF / KBO): mock the `Fetcher`
+  port, not `fetch` itself.
+- **CON token verification**: build real JWS tokens with `@transportial/crypto`
+  rather than hand-rolling base64.
 
 ## Releasing
 
-1. Bump versions in each `package.json` to match.
+1. Bump versions in each `package.json` so they match.
 2. Tag `v<x>.<y>.<z>`; CI publishes OCI images to `ghcr.io`.
 3. Update `CHANGELOG.md` per service.
 
-## Reporting security issues
+## If you find a security issue
 
-See [SECURITY.md](SECURITY.md). Do **not** file public issues for
-vulnerabilities — use the private disclosure channel documented there.
+Please don't file a public issue. See [SECURITY.md](SECURITY.md) for the
+private disclosure channel — we take security reports seriously and aim
+to acknowledge within three business days.

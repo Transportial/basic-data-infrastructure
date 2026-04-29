@@ -1,8 +1,8 @@
 openapi: "3.1.0"
 info:
-  title: BDI Associatie Register API
+  title: ASR — Associatie Register API
   version: "0.1.0"
-  description: Generated OpenAPI specification for asr. See the BDI reference implementation for wire-format details.
+  description: "The ASR is BDI's membership office. It onboards organisations into an association, verifies them against authoritative registries, gates approval through 4-eyes administrators, and issues each member connector a short-lived BVAD that other parties can verify offline against the published trustlist. This is the OpenAPI for the reference implementation — try the requests from this page."
 servers:
   - 
     url: "http://localhost:8080"

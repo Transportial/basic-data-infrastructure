@@ -1,9 +1,9 @@
 {
-  "name": "@bdi/asr-portal-user",
+  "name": "@transportial/asr-portal-user",
   "version": "0.1.0",
   "private": true,
   "description": "BDI ASR user portal — organisation onboarding, verification status, connector enrolment.",
-  "license": "EUPL-1.2",
+  "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

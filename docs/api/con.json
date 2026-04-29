@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "BDI Connector API",
+    "title": "CON — BDI Connector API",
     "version": "0.1.0",
-    "description": "Generated OpenAPI specification for con. See the BDI reference implementation for wire-format details."
+    "description": "The connector runs at the edge of every participating member. It validates inbound BVAD + BVOD locally against cached trustlists, asks a local policy engine for the final allow/deny, and dispatches outbound webhooks with retries and dead-letter handling. No register is in the loop on the data plane."
   },
   "servers": [
     {

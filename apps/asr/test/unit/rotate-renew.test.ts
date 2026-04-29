@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { FakeClock } from '@bdi/kernel';
-import { FakeEventBus } from '@bdi/testing';
-import { generateKeyPair, publicJwk } from '@bdi/crypto';
-import { InMemoryCertificateRepository } from '@bdi/crypto-ca';
+import { FakeClock } from '@transportial/kernel';
+import { FakeEventBus } from '@transportial/testing';
+import { generateKeyPair, publicJwk } from '@transportial/crypto';
+import { InMemoryCertificateRepository } from '@transportial/crypto-ca';
 import { InMemoryKeystore } from '../../src/application/use-cases/jwks.ts';
 import { RotateKeysUseCase } from '../../src/application/use-cases/rotate-keys.ts';
 import { RenewCertificatesUseCase } from '../../src/application/use-cases/renew-certificates.ts';

@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { SystemClock } from '@bdi/kernel';
-import { MetricsRegistry } from '@bdi/observability';
+import { SystemClock } from '@transportial/kernel';
+import { MetricsRegistry } from '@transportial/observability';
 import { CreateChainContextUseCase } from './application/use-cases/create-chain-context.ts';
 import {
   AddDelegationUseCase,

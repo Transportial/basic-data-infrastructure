@@ -3,22 +3,22 @@
 
 const NODES = {
   'member-a': {
-    title: 'Member A (organisation)',
-    body: `An organisation that onboards into an association. Identified by its
-    EUID (e.g. <code>eu.nl:kvk:12345678</code>), backed by a KvK/KBO/LEI
-    record and authenticated via eHerkenning/eIDAS. Registers one or more
-    connectors under this membership.`,
+    title: 'Member A — an organisation',
+    body: `An organisation that has joined an association. Identified by its
+    EUID (for example <code>eu.nl:kvk:12345678</code>), backed by a real
+    KvK / KBO / LEI record, and authenticated via eHerkenning or eIDAS.
+    Registers one or more connectors under its membership.`,
   },
   'member-b': {
-    title: 'Member B (peer organisation)',
-    body: `Another member of the same association — or a member of a federated
-    peer association. Connector B is bound to its EUID and signs its own
-    client assertions.`,
+    title: 'Member B — the peer',
+    body: `Another organisation in the same association — or a member of a
+    federated peer association. Its connector is bound to its own EUID and
+    signs its own client assertions.`,
   },
   keycloak: {
     title: 'Keycloak / IdP',
     body: `Authenticates humans against eHerkenning (SAML) or eIDAS. ASR
-    accepts OIDC access tokens from Keycloak via <code>@bdi/identity</code>'s
+    accepts OIDC access tokens from Keycloak via <code>@transportial/identity</code>'s
     <code>OidcAccessTokenVerifier</code>, which caches JWKS and validates
     <code>iss/aud/exp</code> plus maps <code>acr</code> → assurance level.`,
   },
@@ -46,41 +46,46 @@ const NODES = {
     rules (YAML) reshape the outgoing token.`,
   },
   asr: {
-    title: 'ASR — Associatie Register',
-    body: `<p>Governs <em>who</em> can participate. Aggregates:</p>
+    title: 'ASR — the membership office',
+    body: `<p>Decides <em>who</em> can participate. Two aggregates carry the
+    weight:</p>
     <ul>
       <li><code>Member</code> — onboarding, verification, 4-eyes approval</li>
       <li><code>Connector</code> — registration, key binding, cert issuance</li>
     </ul>
-    <p>Issues the <strong>BVAD</strong> (attribute token) that proves a
-    connector belongs to an active member of the association, at a specific
-    assurance level. Also signs the federation trustlist.</p>`,
+    <p>The ASR issues the <strong>BVAD</strong> (the attribute token) that
+    proves a connector belongs to an active member at a specific assurance
+    level. It also signs the federation trustlist.</p>`,
   },
   ors: {
-    title: 'ORS — Orkestratie Register',
-    body: `<p>Governs <em>who does what in a logistics chain</em>. Aggregate:</p>
+    title: 'ORS — the choreographer',
+    body: `<p>Decides <em>what's happening right now</em> in a logistics
+    chain. Single aggregate:</p>
     <ul>
       <li><code>ChainContext</code> — parties, delegations, natural-person
         pseudonyms, identifiers (BOL, AWB, …)</li>
     </ul>
-    <p>Issues the <strong>BVOD</strong> (authorisation token) scoped to a
-    context. Pushes events to subscribed connectors via Valkey Streams.
-    Natural-person PII never leaves the member — ORS stores only SHA-256
-    pseudonyms.</p>`,
+    <p>The ORS issues the <strong>BVOD</strong> (the authorisation token),
+    scoped to a specific context, and pushes events to subscribed connectors
+    via Valkey Streams. Natural-person PII never leaves the member — the
+    ORS only ever stores SHA-256 pseudonyms.</p>`,
   },
   'con-a': {
-    title: 'Connector A (consumer)',
-    body: `<p>Makes calls into other connectors on behalf of Member A.</p>
+    title: 'Connector A — the caller',
+    body: `<p>Makes calls into other connectors on behalf of Member A.
+    Three steps:</p>
     <ol>
-      <li>Signs a <strong>client assertion</strong> (RFC 7523) to exchange
-        for a BVAD at the ASR token endpoint.</li>
-      <li>Attaches the BVAD + optional BVOD to the outbound request.</li>
-      <li>On success, posts events/webhooks to subscribed peers.</li>
+      <li>Signs a <strong>client assertion</strong> (RFC 7523) and exchanges
+        it for a BVAD at the ASR token endpoint.</li>
+      <li>Attaches the BVAD plus an optional BVOD to the outbound request.</li>
+      <li>On success, posts events or webhooks to any subscribed peers.</li>
     </ol>`,
   },
   'con-b': {
-    title: 'Connector B (provider)',
-    body: `<p>Receives calls. Verification pipeline:</p>
+    title: 'Connector B — the receiver',
+    body: `<p>Receives calls and decides whether to honour them. The full
+    verification pipeline runs <em>locally</em>, never as a round trip to a
+    register:</p>
     <ol>
       <li>BVAD signature vs. ASR trustlist</li>
       <li>BVAD claim timing, issuer, audience, status</li>
@@ -94,8 +99,9 @@ const NODES = {
 const FLOWS = {
   onboarding: {
     title: 'Member onboarding',
-    body: `<p>Member A applies for membership; ASR verifies through external
-    registries and a 4-eyes approval gate.</p>`,
+    body: `<p>A new organisation applies to join the association. The ASR
+    verifies them against authoritative registries (KvK, KBO, GLEIF, VIES)
+    and gates final approval through two independent administrators.</p>`,
     steps: [
       { edges: ['member-asr'],     payload: 'apply',      comment: 'POST /admin/members { euid, legal_name, signing_rep }' },
       { edges: ['asr-reg'],         payload: 'KvK lookup', comment: 'ASR queries KvK/KBO/GLEIF/VIES' },
@@ -107,8 +113,9 @@ const FLOWS = {
   },
   connector: {
     title: 'Connector registration (ACME)',
-    body: `<p>A newly approved member registers a connector key and obtains
-    an X.509 leaf certificate from the ACME CA.</p>`,
+    body: `<p>An approved member registers a connector's signing key and
+    receives an X.509 leaf certificate from the ACME CA — fully automated,
+    no manual cert handling.</p>`,
     steps: [
       { edges: ['member-asr'], payload: 'CSR + jwk', comment: 'POST /admin/connectors with kid, public JWK, and CSR' },
       { edges: ['asr-ca'],     payload: 'newOrder',   comment: 'ASR opens an ACME order against the CA' },
@@ -121,8 +128,9 @@ const FLOWS = {
   },
   bvad: {
     title: 'Issue a BVAD',
-    body: `<p>Connector A presents an RFC 7523 client assertion and exchanges
-    it for a short-lived Bewijs van Associatie-Deelname.</p>`,
+    body: `<p>Connector A proves it owns its private key (RFC 7523 client
+    assertion) and exchanges that proof for a short-lived BVAD — the token
+    that says "yes, this connector really is part of this association".</p>`,
     steps: [
       { edges: ['memberA-conA'], payload: 'trigger',   comment: 'Application wants to call a peer' },
       { edges: ['asr-conA'],     payload: 'client_assertion', comment: 'CON A → ASR /oauth2/token (client_credentials)', reverse: true },
@@ -132,8 +140,10 @@ const FLOWS = {
   },
   context: {
     title: 'Create a chain context',
-    body: `<p>The orchestrator creates a chain context in ORS, identifying
-    parties and delegations. Natural persons appear only as pseudonyms.</p>`,
+    body: `<p>An orchestrator opens a new chain context in the ORS for a
+    specific shipment, naming the parties involved and any delegations.
+    Natural persons appear only as pseudonyms — their PII never leaves the
+    member.</p>`,
     steps: [
       { edges: ['asr-ors'],      payload: 'BVAD',       comment: 'Orchestrator auth validated via BVAD' },
       { edges: ['member-asr'],   payload: 'create ctx', comment: 'POST /chain-contexts { identifiers, parties, delegations }' },
@@ -144,8 +154,9 @@ const FLOWS = {
   },
   bvod: {
     title: 'Issue a BVOD',
-    body: `<p>ORS mints a BVOD scoped to (context, subject connector, peer)
-    proving a specific action is authorised within the chain context.</p>`,
+    body: `<p>The ORS mints a BVOD scoped to (context, subject connector,
+    peer). It's the token that says "for <em>this</em> shipment, between
+    <em>these</em> parties, this specific action is allowed".</p>`,
     steps: [
       { edges: ['ors-conA'],  payload: 'request',   comment: 'CON A → ORS /bvod { chain_context_id, scope }', reverse: true },
       { edges: ['ors-conA'],  payload: 'BVOD JWS',  comment: 'ORS verifies BVAD + chain-context membership, signs BVOD' },
@@ -154,9 +165,10 @@ const FLOWS = {
   },
   delivery: {
     title: 'Deliver a webhook',
-    body: `<p>CON A calls CON B with BVAD + BVOD; CON B validates both, runs
-    the PDP, and returns the response. CON A retries with exponential
-    backoff if the target is temporarily unreachable.</p>`,
+    body: `<p>This is the actual data exchange. Connector A calls Connector
+    B carrying both tokens; B validates them locally, asks its policy
+    engine, and answers. If B is temporarily unreachable, A retries with
+    exponential backoff — no register is in the loop.</p>`,
     steps: [
       { edges: ['conA-conB'], payload: 'BVAD+BVOD', comment: 'POST with Authorization: Bearer <BVAD>; X-BDI-BVOD: <BVOD>' },
       { edges: ['ors-conB'],  payload: 'verify',    comment: 'CON B verifies BVOD against ORS trust store', reverse: true },
@@ -168,9 +180,10 @@ const FLOWS = {
   },
   federation: {
     title: 'Cross-association exchange (RFC 8693)',
-    body: `<p>A peer association mints a BVAD for its own member; our ASR
-    verifies the peer's signature, re-issues a local BVAD, and optionally
-    applies per-peer claim-transformation rules.</p>`,
+    body: `<p>BDI networks federate with each other. A peer association
+    mints a BVAD for one of its own members; our ASR verifies the peer's
+    signature, re-issues a local BVAD, and (optionally) applies per-peer
+    claim-transformation rules along the way.</p>`,
     steps: [
       { edges: ['asr-peer'],   payload: 'peer BVAD', comment: 'Peer ASR issues BVAD under its own trustlist', reverse: true },
       { edges: ['asr-peer'],   payload: 'exchange',  comment: 'Local ASR /oauth2/token?grant=token-exchange' },
@@ -262,7 +275,7 @@ async function runFlow(flowId) {
     for (const e of step.edges) highlightEdge(e, false);
     await sleep(120);
   }
-  stepEl.textContent = `✔ flow complete — pick another flow or click a component`;
+  stepEl.textContent = `Done. Pick another flow or click any component to read more.`;
 }
 
 // Wire up

@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { FakeClock } from '@bdi/kernel';
+import { FakeClock } from '@transportial/kernel';
 import {
   BVAD_CLAIM_ASSOCIATION,
   BVAD_CLAIM_ASSURANCE,
@@ -13,8 +13,8 @@ import {
   BVOD_CLAIM_SCOPE,
   type BvadClaims,
   type BvodClaims,
-} from '@bdi/contracts';
-import { EmbeddedPdp, type Policy } from '@bdi/policy';
+} from '@transportial/contracts';
+import { EmbeddedPdp, type Policy } from '@transportial/policy';
 import { VerifyIncomingUseCase } from '../../src/application/use-cases/verify-incoming.ts';
 
 const bvad: BvadClaims = {

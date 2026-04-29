@@ -1,8 +1,8 @@
 openapi: "3.1.0"
 info:
-  title: BDI Orkestratie Register API
+  title: ORS — Orkestratie Register API
   version: "0.1.0"
-  description: Generated OpenAPI specification for ors. See the BDI reference implementation for wire-format details.
+  description: "The ORS is the choreographer for an actual data exchange. It owns the chain context (who the parties are, what role each plays, which identifiers tie them to a shipment), keeps natural-person PII out of sight by storing only pseudonyms, and issues the BVOD that says \"for this specific chain, these specific parties may exchange data\"."
 servers:
   - 
     url: "http://localhost:8080"

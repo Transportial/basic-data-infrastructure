@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { generateKeyPair, publicJwk, JwkSigner } from '@bdi/crypto';
-import { AcmeClient, type ChallengeSolver } from '@bdi/crypto-ca';
+import { generateKeyPair, publicJwk, JwkSigner } from '@transportial/crypto';
+import { AcmeClient, type ChallengeSolver } from '@transportial/crypto-ca';
 import {
   bitString,
   concat,
@@ -12,8 +12,8 @@ import {
   set,
   tlv,
   utf8,
-} from '@bdi/crypto-ca';
-import { OID, jwkToSpki } from '@bdi/crypto-ca';
+} from '@transportial/crypto-ca';
+import { OID, jwkToSpki } from '@transportial/crypto-ca';
 import { createServer } from '../../src/server.ts';
 
 async function buildCsr(

@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import type { EventEnvelope } from '@bdi/contracts';
+import type { EventEnvelope } from '@transportial/contracts';
 import {
   InMemoryBvodCache,
   InMemoryMemberCache,
@@ -8,7 +8,7 @@ import {
   buildOrsEventConsumer,
 } from '../../src/interface/events/consumers.ts';
 import { TrustlistStore } from '../../src/infrastructure/trustlist-store.ts';
-import { InMemoryTrustlist } from '@bdi/crypto';
+import { InMemoryTrustlist } from '@transportial/crypto';
 
 function env<T>(type: string, body: T): EventEnvelope<T> {
   return {

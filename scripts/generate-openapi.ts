@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 // Generates per-service OpenAPI 3.1 documents (JSON + YAML) into docs/api/.
@@ -14,16 +14,40 @@ import {
   commonSecuritySchemes,
   toYaml,
   type OperationSpec,
-} from '@bdi/openapi';
+} from '@transportial/openapi';
 
 const outDir = join(import.meta.dir ?? process.cwd(), '..', 'docs', 'api');
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+
+const SERVICE_DESCRIPTIONS: Record<string, string> = {
+  asr:
+    "The ASR is BDI's membership office. It onboards organisations into an " +
+    'association, verifies them against authoritative registries, gates ' +
+    'approval through 4-eyes administrators, and issues each member ' +
+    'connector a short-lived BVAD that other parties can verify offline ' +
+    'against the published trustlist. This is the OpenAPI for the ' +
+    'reference implementation — try the requests from this page.',
+  ors:
+    'The ORS is the choreographer for an actual data exchange. It owns the ' +
+    'chain context (who the parties are, what role each plays, which ' +
+    'identifiers tie them to a shipment), keeps natural-person PII out of ' +
+    'sight by storing only pseudonyms, and issues the BVOD that says ' +
+    '"for this specific chain, these specific parties may exchange data".',
+  con:
+    'The connector runs at the edge of every participating member. It ' +
+    "validates inbound BVAD + BVOD locally against cached trustlists, " +
+    'asks a local policy engine for the final allow/deny, and dispatches ' +
+    'outbound webhooks with retries and dead-letter handling. No register ' +
+    'is in the loop on the data plane.',
+};
 
 function emit(name: string, operations: ReadonlyArray<OperationSpec>, title: string): void {
   const doc = buildOpenApi({
     title,
     version: '0.1.0',
-    description: `Generated OpenAPI specification for ${name}. See the BDI reference implementation for wire-format details.`,
+    description:
+      SERVICE_DESCRIPTIONS[name] ??
+      `OpenAPI specification for ${name}. Part of the BDI reference implementation.`,
     servers: [{ url: 'http://localhost:8080', description: 'local-dev' }],
     components: { schemas: commonSchemas, securitySchemes: commonSecuritySchemes },
     operations,
@@ -289,9 +313,9 @@ const conOperations: OperationSpec[] = [
   },
 ];
 
-emit('asr', asrOperations, 'BDI Associatie Register API');
-emit('ors', orsOperations, 'BDI Orkestratie Register API');
-emit('con', conOperations, 'BDI Connector API');
+emit('asr', asrOperations, 'ASR — Associatie Register API');
+emit('ors', orsOperations, 'ORS — Orkestratie Register API');
+emit('con', conOperations, 'CON — BDI Connector API');
 
 // eslint-disable-next-line no-console
 console.log(`Wrote OpenAPI specs to ${outDir}`);

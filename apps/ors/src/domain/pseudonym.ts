@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { Euid } from '@bdi/kernel';
+import type { Euid } from '@transportial/kernel';
 
 // Generate a pseudonym for a natural person tied to an organisation, a person
 // identifier supplied by the organisation, and a per-association salt. The

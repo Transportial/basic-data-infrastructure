@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { generateKeyPair, publicJwk } from '@bdi/crypto';
+import { generateKeyPair, publicJwk } from '@transportial/crypto';
 import {
   InMemoryKeystore,
   InMemoryJwksService,
@@ -15,7 +15,7 @@ import {
 } from '../../src/application/use-cases/authenticate-client.ts';
 import { InMemoryConnectorRepository, InMemoryMemberRepository } from '../../src/infrastructure/repositories/in-memory.ts';
 import type { Connector } from '../../src/domain/model/connector.ts';
-import { FakeClock } from '@bdi/kernel';
+import { FakeClock } from '@transportial/kernel';
 
 async function freshKeystore() {
   const kp = await generateKeyPair('ES256');

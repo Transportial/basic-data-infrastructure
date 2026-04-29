@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import { Database, type Statement } from 'bun:sqlite';
-import type { AssociationId, ChainContextId, Euid } from '@bdi/kernel';
+import type { AssociationId, ChainContextId, Euid } from '@transportial/kernel';
 import type { ChainContext } from '../../domain/model/chain-context.ts';
 import type { Subscription } from '../../domain/model/subscription.ts';
 import type {

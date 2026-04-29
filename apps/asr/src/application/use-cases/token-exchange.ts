@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type Jwk, type Result } from '@bdi/kernel';
-import { compactVerify, InMemoryTrustlist } from '@bdi/crypto';
-import type { RawSigner } from '@bdi/crypto';
+import { err, ok, type Jwk, type Result } from '@transportial/kernel';
+import { compactVerify, InMemoryTrustlist } from '@transportial/crypto';
+import type { RawSigner } from '@transportial/crypto';
 import {
   BVAD_CLAIM_ASSOCIATION,
   BVAD_CLAIM_ASSURANCE,
@@ -13,7 +13,7 @@ import {
   BVAD_LIFETIME_SECONDS,
   validateBvadClaims,
   type BvadClaims,
-} from '@bdi/contracts';
+} from '@transportial/contracts';
 import type { ClockPort, EventBusPort, IdPort, SignerPort } from '../ports.ts';
 import { transformForPeer, type ClaimTransformRules } from '../claim-transform.ts';
 

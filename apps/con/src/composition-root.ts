@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { SystemClock } from '@bdi/kernel';
-import { InMemoryTrustlist } from '@bdi/crypto';
-import { EmbeddedPdp, type Policy } from '@bdi/policy';
-import { MetricsRegistry } from '@bdi/observability';
+import { SystemClock } from '@transportial/kernel';
+import { InMemoryTrustlist } from '@transportial/crypto';
+import { EmbeddedPdp, type Policy } from '@transportial/policy';
+import { MetricsRegistry } from '@transportial/observability';
 import { TrustlistStore } from './infrastructure/trustlist-store.ts';
 import { OrsTrust } from './infrastructure/ors-trust.ts';
 import { FetchHttpClient, RecordingHttpClient } from './infrastructure/http-client.ts';
@@ -31,7 +31,7 @@ import {
   type RateLimiter,
   type ValkeyClient,
   ValkeyStreamConsumer,
-} from '@bdi/events';
+} from '@transportial/events';
 import { buildRouter, type HealthProbe } from './interface/http/routes.ts';
 import type { Router } from './interface/http/router.ts';
 import type { EventBusPort, HttpClientPort } from './application/ports.ts';

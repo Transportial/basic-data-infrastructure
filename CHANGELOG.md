@@ -8,21 +8,21 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- **@bdi/kernel**: pure domain primitives — `Result`, branded types, EUID,
+- **@transportial/kernel**: pure domain primitives — `Result`, branded types, EUID,
   LEI (ISO 17442), VAT (VIES-compatible), KvK, KBO, AssociationId,
   ConnectorId, ChainContextId, `Clock`, ISO-8601 duration parser, JWK
   validation, BDI JWS profile header validation, RFC 7638 thumbprint.
-- **@bdi/contracts**: wire-format schemas for BVAD, BVOD, trustlist, event
-  envelope, OAuth client-credentials. Dual-licensed EUPL-1.2 / Apache-2.0.
-- **@bdi/config**: strict fail-fast environment parsing.
-- **@bdi/observability**: structured logger, Prometheus-compatible
+- **@transportial/contracts**: wire-format schemas for BVAD, BVOD, trustlist, event
+  envelope, OAuth client-credentials. Dual-licensed PolyForm Shield 1.0.0 / Apache-2.0.
+- **@transportial/config**: strict fail-fast environment parsing.
+- **@transportial/observability**: structured logger, Prometheus-compatible
   counters/histograms, W3C Trace Context helpers.
-- **@bdi/crypto**: BDI JWS profile compact sign/verify, HMAC-SHA-256
+- **@transportial/crypto**: BDI JWS profile compact sign/verify, HMAC-SHA-256
   raw signer, in-memory trustlist resolver.
-- **@bdi/events**: typed event producer + in-memory consumer with
+- **@transportial/events**: typed event producer + in-memory consumer with
   retry/dead-letter classification.
-- **@bdi/policy**: `PolicyDecisionPoint` port + Cedar-inspired embedded PDP.
-- **@bdi/testing**: `FakeClock`, `FakeSigner`, `FakeEventBus`,
+- **@transportial/policy**: `PolicyDecisionPoint` port + Cedar-inspired embedded PDP.
+- **@transportial/testing**: `FakeClock`, `FakeSigner`, `FakeEventBus`,
   deterministic id generators.
 - **ASR — Associatie Register**:
   - Member lifecycle (`draft → verified → activated → suspended → revoked`)

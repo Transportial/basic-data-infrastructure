@@ -1,12 +1,12 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect, beforeEach } from 'bun:test';
 import {
   parseAssociationId,
   parseEuid,
   FakeClock,
   type Jwk,
-} from '@bdi/kernel';
-import { FakeEventBus, DeterministicUuidGenerator, FakeSigner } from '@bdi/testing';
+} from '@transportial/kernel';
+import { FakeEventBus, DeterministicUuidGenerator, FakeSigner } from '@transportial/testing';
 import {
   InMemoryApprovalRepository,
   InMemoryConnectorRepository,

@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { FakeClock } from '@bdi/kernel';
-import { FakeEventBus } from '@bdi/testing';
+import { FakeClock } from '@transportial/kernel';
+import { FakeEventBus } from '@transportial/testing';
 import { DeliverWebhookUseCase } from '../../src/application/use-cases/deliver-webhook.ts';
 import { InMemoryDeliveryRepository } from '../../src/infrastructure/delivery-repository.ts';
 import type { WebhookDelivery } from '../../src/domain/webhook.ts';

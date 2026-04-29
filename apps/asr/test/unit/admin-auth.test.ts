@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { StaticBearerAuthn } from '@bdi/identity';
+import { StaticBearerAuthn } from '@transportial/identity';
 import { composeAsr } from '../../src/composition-root.ts';
 
 describe('ASR admin auth middleware', () => {

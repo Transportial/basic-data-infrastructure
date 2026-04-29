@@ -6,7 +6,7 @@ COPY tsconfig.base.json tsconfig.json bunfig.toml ./
 COPY apps ./apps
 COPY packages ./packages
 RUN bun install --frozen-lockfile
-RUN bun run --filter '@bdi/asr-portal-admin' build
+RUN bun run --filter '@transportial/asr-portal-admin' build
 
 FROM nginx:1.27-alpine AS runtime
 COPY --from=build /repo/apps/asr-portal-admin/dist /usr/share/nginx/html

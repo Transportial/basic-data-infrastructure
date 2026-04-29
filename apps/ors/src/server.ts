@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import { composeOrs, type OrsConfig } from './composition-root.ts';
@@ -41,11 +41,3 @@ export function createServer(options: ServerOptions): {
   };
 }
 
-if (typeof Bun !== 'undefined' && import.meta.main) {
-  const port = Number(process.env.PORT ?? 8081);
-  const issuer = process.env.ORS_ISSUER ?? `http://localhost:${port}`;
-  const { fetch } = createServer({ port, issuer });
-  Bun.serve({ port, fetch });
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify({ level: 'info', msg: 'ORS listening', port, issuer }));
-}

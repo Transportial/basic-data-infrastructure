@@ -7,8 +7,8 @@
   "labels": ["dependencies"],
   "packageRules": [
     {
-      "description": "Group all @bdi/* workspace-internal dependencies (never opened as Renovate PRs).",
-      "matchPackagePatterns": ["^@bdi/"],
+      "description": "Group all @transportial/* workspace-internal dependencies (never opened as Renovate PRs).",
+      "matchPackagePatterns": ["^@transportial/"],
       "enabled": false
     },
     {

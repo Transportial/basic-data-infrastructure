@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2 AND Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 export * from './validator.ts';

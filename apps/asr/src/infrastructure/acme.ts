@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { generateKeyPair, publicJwk, type KeyAlg } from '@bdi/crypto';
+import { generateKeyPair, publicJwk, type KeyAlg } from '@transportial/crypto';
 import {
   buildAcmeHttp,
   InMemoryAccountRepository,
@@ -22,8 +22,8 @@ import {
   type AcmeServerConfig,
   type AcmeServices,
   type DnsResolver,
-} from '@bdi/crypto-ca';
-import { jwkToSpki, spkiPublicKeyBytes } from '@bdi/crypto-ca';
+} from '@transportial/crypto-ca';
+import { jwkToSpki, spkiPublicKeyBytes } from '@transportial/crypto-ca';
 
 export interface BuildAcmeOptions {
   readonly directoryBaseUrl: string;

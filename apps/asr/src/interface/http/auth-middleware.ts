@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { AuthnPort, Principal } from '@bdi/identity';
+import type { AuthnPort, Principal } from '@transportial/identity';
 import type { HttpRequest, HttpResponse, Router } from './router.ts';
 
 // requireAuth wraps admin routes so that every request must carry a bearer

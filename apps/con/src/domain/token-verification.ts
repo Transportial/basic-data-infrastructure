@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type Result } from '@bdi/kernel';
-import type { BvadClaims, BvodClaims } from '@bdi/contracts';
+import { err, ok, type Result } from '@transportial/kernel';
+import type { BvadClaims, BvodClaims } from '@transportial/contracts';
 
 export type ClockSkew = { readonly seconds: number };
 export const DEFAULT_SKEW: ClockSkew = { seconds: 30 };

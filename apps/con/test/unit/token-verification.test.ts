@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
 import {
   BVAD_CLAIM_ASSOCIATION,
@@ -12,7 +12,7 @@ import {
   BVOD_CLAIM_SCOPE,
   type BvadClaims,
   type BvodClaims,
-} from '@bdi/contracts';
+} from '@transportial/contracts';
 import {
   validateBvadTiming,
   validateBvodTiming,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import {
@@ -6,8 +6,8 @@ import {
   parseEuid,
   validatePublicJwk,
   type Jwk,
-} from '@bdi/kernel';
-import { validateClientCredentialsRequest } from '@bdi/contracts';
+} from '@transportial/kernel';
+import { validateClientCredentialsRequest } from '@transportial/contracts';
 import { Router, type HttpRequest, type HttpResponse } from './router.ts';
 import type { StartOnboardingUseCase } from '../../application/use-cases/start-onboarding.ts';
 import type { RunVerificationsUseCase } from '../../application/use-cases/run-verifications.ts';

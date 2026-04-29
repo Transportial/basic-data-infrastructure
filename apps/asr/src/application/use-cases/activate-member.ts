@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type Result } from '@bdi/kernel';
+import { err, ok, type Result } from '@transportial/kernel';
 import { activate } from '../../domain/model/member-transitions.ts';
 import { approve, isComplete } from '../../domain/model/four-eyes.ts';
 import type { FourEyesApproval } from '../../domain/model/four-eyes.ts';

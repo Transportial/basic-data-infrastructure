@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
 import { base64UrlDecode, type Jwk } from '@bdi/kernel';
 import { generateKeyPair, JwkSigner, publicJwk } from '@bdi/crypto';

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import { composeAsr, type AsrConfig } from './composition-root.ts';
@@ -78,11 +78,3 @@ export async function createServer(options: ServerOptions): Promise<AsrServer> {
   };
 }
 
-if (typeof Bun !== 'undefined' && import.meta.main) {
-  const port = Number(process.env.PORT ?? 8080);
-  const issuer = process.env.ASR_ISSUER ?? `http://localhost:${port}`;
-  const { fetch } = await createServer({ port, issuer });
-  Bun.serve({ port, fetch });
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify({ level: 'info', msg: 'ASR listening', port, issuer }));
-}

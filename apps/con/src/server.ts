@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import { composeCon, type ConConfig } from './composition-root.ts';
@@ -41,23 +41,3 @@ export function createServer(options: ServerOptions): {
   };
 }
 
-if (typeof Bun !== 'undefined' && import.meta.main) {
-  const port = Number(process.env.PORT ?? 8443);
-  const asrIssuer = process.env.ASR_ISSUER ?? 'http://localhost:8080';
-  const orsIssuer = process.env.ORS_ISSUER ?? 'http://localhost:8081';
-  const associationId = process.env.ASSOCIATION_ID ?? 'ctn';
-  const ownConnectorId =
-    process.env.CONNECTOR_ID ?? 'urn:bdi:connector:00000000-0000-4000-8000-000000000001';
-  const audience = process.env.CON_AUDIENCE ?? ownConnectorId;
-  const { fetch } = createServer({
-    port,
-    asrIssuer,
-    orsIssuer,
-    associationId,
-    ownConnectorId,
-    audience,
-  });
-  Bun.serve({ port, fetch });
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify({ level: 'info', msg: 'CON listening', port }));
-}

@@ -1,31 +1,68 @@
 {
-  "name": "@bdi/asr",
+  "name": "@transportial/asr",
   "version": "0.1.0",
-  "private": true,
   "description": "BDI Associatie Register (ASR) - member governance, trustlist, BVAD issuance.",
-  "license": "EUPL-1.2",
+  "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
-  "main": "./src/server.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "bin": {
+    "bdi-asr": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/transportial/basic-data-infrastructure.git",
+    "directory": "apps/asr"
+  },
   "scripts": {
-    "build": "bun build ./src/server.ts --outdir ./dist --target bun --external bun:sqlite",
+    "build": "tsup",
     "dev": "bun run --watch ./src/server.ts",
     "start": "bun run ./src/server.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@bdi/kernel": "workspace:*",
-    "@bdi/contracts": "workspace:*",
-    "@bdi/config": "workspace:*",
-    "@bdi/crypto": "workspace:*",
-    "@bdi/crypto-ca": "workspace:*",
-    "@bdi/events": "workspace:*",
-    "@bdi/observability": "workspace:*",
-    "@bdi/identity": "workspace:*",
-    "@bdi/testing": "workspace:*"
+    "@transportial/kernel": "workspace:*",
+    "@transportial/contracts": "workspace:*",
+    "@transportial/config": "workspace:*",
+    "@transportial/crypto": "workspace:*",
+    "@transportial/crypto-ca": "workspace:*",
+    "@transportial/events": "workspace:*",
+    "@transportial/observability": "workspace:*",
+    "@transportial/identity": "workspace:*",
+    "@transportial/testing": "workspace:*"
   },
   "devDependencies": {
+    "tsup": "^8.3.5",
     "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

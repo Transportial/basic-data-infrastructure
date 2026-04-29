@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
 import {
@@ -7,7 +7,7 @@ import {
   type ChainContextId,
   type Euid,
   type Result,
-} from '@bdi/kernel';
+} from '@transportial/kernel';
 import {
   addParty,
   addDelegation,

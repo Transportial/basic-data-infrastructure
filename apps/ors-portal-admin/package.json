@@ -1,9 +1,9 @@
 {
-  "name": "@bdi/ors-portal-admin",
+  "name": "@transportial/ors-portal-admin",
   "version": "0.1.0",
   "private": true,
   "description": "BDI ORS admin portal — chain contexts, parties, delegations, event viewer.",
-  "license": "EUPL-1.2",
+  "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

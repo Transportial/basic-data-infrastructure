@@ -1,9 +1,9 @@
 {
-  "name": "@bdi/asr-portal-admin",
+  "name": "@transportial/asr-portal-admin",
   "version": "0.1.0",
   "private": true,
   "description": "BDI ASR admin portal — 4-eyes approvals, connector registration, trustlist browser.",
-  "license": "EUPL-1.2",
+  "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

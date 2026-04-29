@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { compactSign, HmacSigner, InMemoryTrustlist } from '@bdi/crypto';
+import { compactSign, HmacSigner, InMemoryTrustlist } from '@transportial/crypto';
 import { createServer } from '../../src/server.ts';
 
 async function sha256B64(bytes: Uint8Array): Promise<string> {

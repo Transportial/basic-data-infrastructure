@@ -1,15 +1,15 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type Result } from '@bdi/kernel';
-import type { BvadClaims, BvodClaims } from '@bdi/contracts';
-import { verifyX5cChain, computeCertThumbprintSha256 } from '@bdi/crypto';
+import { err, ok, type Result } from '@transportial/kernel';
+import type { BvadClaims, BvodClaims } from '@transportial/contracts';
+import { verifyX5cChain, computeCertThumbprintSha256 } from '@transportial/crypto';
 import {
   validateBvadTiming,
   validateBvodTiming,
   type ValidationError,
 } from '../../domain/token-verification.ts';
-import type { PdpInput, PolicyDecisionPoint } from '@bdi/policy';
+import type { PdpInput, PolicyDecisionPoint } from '@transportial/policy';
 import type {
   ClockPort,
   OrsTrustPort,

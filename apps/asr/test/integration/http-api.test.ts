@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { base64UrlEncode } from '@bdi/kernel';
-import { generateKeyPair, JwkSigner, publicJwk } from '@bdi/crypto';
+import { base64UrlEncode } from '@transportial/kernel';
+import { generateKeyPair, JwkSigner, publicJwk } from '@transportial/crypto';
 import { createServer } from '../../src/server.ts';
 import { AlwaysSuccessSource } from '../fixtures/fake-sources.ts';
 

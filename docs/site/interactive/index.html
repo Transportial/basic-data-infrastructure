@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BDI Kerncomponenten — Interactive Explorer</title>
+  <title>BDI Kerncomponenten — Interactive explorer</title>
   <link rel="stylesheet" href="../assets/site.css" />
   <link rel="stylesheet" href="./interactive.css" />
 </head>
@@ -22,13 +22,15 @@
 
   <main class="interactive-layout">
     <aside class="interactive-sidebar">
-      <h1>Explore the BDI</h1>
+      <h1>See BDI in motion</h1>
       <p class="lede">
-        Click a component to read about its responsibilities, or run a flow
-        to watch tokens and events move through the system.
+        The fastest way to understand how the pieces fit together is to
+        watch a real exchange happen. Pick a flow below to see tokens
+        and events travel through the system, or click any node in the
+        diagram to read what it does.
       </p>
 
-      <h2>Flows</h2>
+      <h2>Try a flow</h2>
       <div class="flow-buttons">
         <button data-flow="onboarding" class="flow-btn">Member onboarding</button>
         <button data-flow="connector" class="flow-btn">Connector registration (ACME)</button>
@@ -39,9 +41,9 @@
         <button data-flow="federation" class="flow-btn">Cross-association exchange</button>
       </div>
 
-      <h2>Selection</h2>
+      <h2>Details</h2>
       <div id="detail-panel" class="detail-panel">
-        <p class="muted">Click anything in the diagram, or pick a flow above.</p>
+        <p class="muted">Click anything in the diagram to see what it does, or pick a flow above to watch one in action.</p>
       </div>
 
       <h2>Legend</h2>

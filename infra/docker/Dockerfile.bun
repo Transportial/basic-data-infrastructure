@@ -10,7 +10,7 @@ RUN bun install --frozen-lockfile
 FROM deps AS build
 ARG APP
 WORKDIR /repo
-RUN bun run --filter "@bdi/${APP}" build
+RUN bun run --filter "@transportial/${APP}" build
 
 FROM oven/bun:${BUN_VERSION}-alpine AS runtime
 ARG APP

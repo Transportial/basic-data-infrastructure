@@ -1,0 +1,49 @@
+name: Publish to npm
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag (e.g. v0.1.0)'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+      - run: bun install --frozen-lockfile
+      - name: Resolve tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+      - name: Prepare package versions
+        run: bun run scripts/prepare-publish.ts "${{ steps.tag.outputs.tag }}"
+      - name: Build workspace packages
+        run: bun run --filter './packages/*' build
+      - name: Build apps
+        run: bun run --filter '@transportial/asr' --filter '@transportial/ors' --filter '@transportial/con' build
+      - name: Copy LICENSE into each publishable package
+        run: |
+          for d in packages/*/ apps/asr/ apps/ors/ apps/con/; do
+            cp LICENSE "$d/LICENSE"
+          done
+      - name: Publish
+        run: bun run scripts/publish-all.ts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

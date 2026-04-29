@@ -5,34 +5,44 @@
 
 ## Context
 
-The domain rules (member state machine, chain-context invariants, BVAD
-contents) must be testable and understandable without pulling in a DB,
-HTTP, or crypto library. Typical Node services mix all four, making
-unit tests flaky and future refactors hard.
+The domain rules of BDI — the member state machine, chain-context
+invariants, BVAD contents — need to be testable and *understandable*
+without dragging in a database, an HTTP framework, or a crypto library.
+A typical Node service mixes all four, and the result is flaky tests
+and refactors that take a week.
+
+We didn't want that.
 
 ## Decision
 
 Adopt the classic four-layer split: `domain` → `application` →
 `infrastructure` → `interface`. Ports live in `application/ports.ts`;
 adapters implement them in `infrastructure/`. Composition happens in a
-single `composition-root.ts` per service. No DI framework.
+single `composition-root.ts` per service. No DI framework — the wiring
+is plain TypeScript.
 
 ## Consequences
 
-- Obvious wiring: one file shows exactly what's plugged into what.
-- Unit tests run without any adapters via in-memory fakes from
-  `@bdi/testing`.
-- Replacing a backend (Postgres → Redis, HMAC → EdDSA/HSM, in-memory →
-  Valkey) touches only infrastructure and composition-root.
-- Slight duplication: each service declares its own router and HTTP
-  request types rather than importing from a shared library. This is
-  deliberate — shared HTTP types would leak delivery concerns into the
-  application layer.
+What we like about this:
 
-## Alternatives considered
+- Wiring is obvious. One file shows exactly what's plugged into what,
+  no decorators or runtime container to read around.
+- Unit tests run with no adapters — just in-memory fakes from
+  `@transportial/testing`.
+- Replacing a backend (Postgres → Redis, HMAC → EdDSA / HSM, in-memory
+  → Valkey) touches only `infrastructure/` and `composition-root.ts`.
 
-- **Nest.js / Awilix / InversifyJS**: adds framework dependency for no
-  gain at our scale. Rejected.
-- **Flat architecture**: easier to write, harder to keep clean. Rejected
-  because the protocol is long-lived and will outlast individual
-  adapters.
+What we accept:
+
+- A little duplication. Each service declares its own router and HTTP
+  request types rather than importing from a shared library. We chose
+  this deliberately — sharing HTTP types would leak delivery concerns
+  back into the application layer.
+
+## What else we considered
+
+- **Nest.js / Awilix / InversifyJS.** Adds a framework dependency for
+  no practical gain at our scale. Rejected.
+- **Flat architecture.** Easier to write at first, harder to keep
+  honest over time. Rejected because the protocol is long-lived and
+  will outlast any individual adapter.

@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type Result } from '@bdi/kernel';
+import { err, ok, type Result } from '@transportial/kernel';
 import {
   BVAD_CLAIM_ASSOCIATION,
   BVAD_CLAIM_ASSURANCE,
@@ -10,7 +10,7 @@ import {
   BVAD_CLAIM_STATUS,
   BVAD_LIFETIME_SECONDS,
   type BvadClaims,
-} from '@bdi/contracts';
+} from '@transportial/contracts';
 import type {
   ClockPort,
   ConnectorRepository,

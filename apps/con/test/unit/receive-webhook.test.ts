@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { FakeClock, base64UrlEncode } from '@bdi/kernel';
-import { FakeEventBus } from '@bdi/testing';
-import { compactSign, HmacSigner, InMemoryTrustlist } from '@bdi/crypto';
+import { FakeClock, base64UrlEncode } from '@transportial/kernel';
+import { FakeEventBus } from '@transportial/testing';
+import { compactSign, HmacSigner, InMemoryTrustlist } from '@transportial/crypto';
 import {
   InMemoryReplayCache,
   ReceiveWebhookUseCase,

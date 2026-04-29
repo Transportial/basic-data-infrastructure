@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { err, ok, type AssociationId, type Euid, type Result } from '@bdi/kernel';
+import { err, ok, type AssociationId, type Euid, type Result } from '@transportial/kernel';
 import { createDraftMember, type SigningRepresentative } from '../../domain/model/member.ts';
 import type { ClockPort, EventBusPort, IdPort, MemberRepository } from '../ports.ts';
 

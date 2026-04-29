@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 import { describe, test, expect } from 'bun:test';
-import { generateKeyPair, publicJwk, JwkSigner } from '@bdi/crypto';
+import { generateKeyPair, publicJwk, JwkSigner } from '@transportial/crypto';
 import { PostgresFederationRegistry } from '../../src/infrastructure/repositories/federation-postgres.ts';
 import { InMemorySqlPort } from '../../src/infrastructure/repositories/postgres.ts';
 

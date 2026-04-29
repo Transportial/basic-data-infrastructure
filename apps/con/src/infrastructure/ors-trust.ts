@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { compactVerify, type TrustlistResolver } from '@bdi/crypto';
-import { validateBvodClaims, type BvodClaims } from '@bdi/contracts';
+import { compactVerify, type TrustlistResolver } from '@transportial/crypto';
+import { validateBvodClaims, type BvodClaims } from '@transportial/contracts';
 import type { OrsTrustPort } from '../application/ports.ts';
 
 export class OrsTrust implements OrsTrustPort {

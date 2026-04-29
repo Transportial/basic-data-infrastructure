@@ -5,30 +5,41 @@
 
 ## Context
 
-Three services share a protocol (`@bdi/contracts`), a signing profile
-(`@bdi/crypto`), a policy engine (`@bdi/policy`), and observability
-primitives. Independent repositories would make protocol changes
-expensive (multi-repo PRs) and encourage drift.
+The three BDI services share a *lot* of substance: a protocol
+(`@transportial/contracts`), a signing profile (`@transportial/crypto`), a policy engine
+(`@transportial/policy`), and observability primitives. If we'd put each service
+in its own repository, even a tiny protocol change would mean
+choreographing several PRs in lockstep — and protocols that are
+expensive to change tend to drift instead.
 
 ## Decision
 
 Use a single repository with Bun workspaces. Each service and each
-shared package is its own workspace with `@bdi/<name>`. The root
+shared package is its own workspace, prefixed `@transportial/<name>`. The root
 `tsconfig.base.json` declares path mappings so services resolve
-`@bdi/kernel` directly to the source — no build step needed in dev.
+`@transportial/kernel` and friends directly to source — no build step needed in
+dev.
 
 ## Consequences
 
-- Protocol changes are a single PR; incompatibilities caught at compile.
-- Shared CI pipeline amortises setup cost.
-- Deploying one service is independent (each has its own Dockerfile
-  target and own versioning); co-location does not imply coupled deploy.
-- Drawback: repo size grows; partial clones are required for large
-  contributor deployments (not an issue at the current scale).
+What we gain:
 
-## Alternatives considered
+- Protocol changes are a single PR; incompatibilities show up at compile
+  time, not at runtime in production.
+- Shared CI pipeline amortises the setup cost across services.
+- Each service still has its own Dockerfile target and version, so
+  co-location does not imply coupled deploy.
 
-- **Polyrepo with git submodules**: high friction, easy to fall out of
+What we accept:
+
+- The repo grows over time. Partial clones may eventually be useful for
+  large contributor deployments — not an issue at the current scale,
+  but worth keeping an eye on.
+
+## What else we considered
+
+- **Polyrepo with git submodules.** High friction, easy to fall out of
   sync. Rejected.
-- **Polyrepo with private registry**: forces contract changes to flow
-  through a release cycle. Rejected for MVP; revisit after 1.0.
+- **Polyrepo with a private package registry.** Forces every contract
+  change through a release cycle. Rejected for the MVP — worth
+  revisiting after 1.0 once the protocol settles.

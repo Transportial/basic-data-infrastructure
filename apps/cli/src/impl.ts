@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { generateKeyPair, publicJwk } from '@bdi/crypto';
-import { makeConnectorId, parseAssociationId, parseEuid } from '@bdi/kernel';
+import { generateKeyPair, publicJwk } from '@transportial/crypto';
+import { makeConnectorId, parseAssociationId, parseEuid } from '@transportial/kernel';
 import type { Command, CliIO, ParsedArgs } from './commands.ts';
 
 // BDI admin CLI. Commands use a pluggable HTTP `fetch` (so they can drive

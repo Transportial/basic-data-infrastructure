@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { ok, type AssociationId, type Result } from '@bdi/kernel';
-import type { Trustlist, TrustlistEntry } from '@bdi/contracts';
+import { ok, type AssociationId, type Result } from '@transportial/kernel';
+import type { Trustlist, TrustlistEntry } from '@transportial/contracts';
 import type {
   ClockPort,
   ConnectorRepository,

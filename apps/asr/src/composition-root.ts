@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import { SystemClock } from '@bdi/kernel';
-import { MetricsRegistry } from '@bdi/observability';
-import { Scheduler } from '@bdi/events';
+import { SystemClock } from '@transportial/kernel';
+import { MetricsRegistry } from '@transportial/observability';
+import { Scheduler } from '@transportial/events';
 import type { MemberRepository, ConnectorRepository, ApprovalRepository } from './application/ports.ts';
 import { RotateKeysUseCase } from './application/use-cases/rotate-keys.ts';
 import { RenewCertificatesUseCase } from './application/use-cases/renew-certificates.ts';
@@ -51,7 +51,7 @@ import type { Router } from './interface/http/router.ts';
 import { wrapAdminAuth } from './interface/http/auth-middleware.ts';
 import type { EventBusPort, VerificationSource } from './application/ports.ts';
 import { buildAcmeBundle, type AcmeBundle, type BuildAcmeOptions } from './infrastructure/acme.ts';
-import type { AuthnPort } from '@bdi/identity';
+import type { AuthnPort } from '@transportial/identity';
 
 export class InMemoryEventBus implements EventBusPort {
   readonly published: Array<{ type: string; associationId: string; body: unknown }> = [];

@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: EUPL-1.2
+// SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0
 // Copyright (C) 2026 Transportial and contributors
 
-import type { CertificateRepository } from '@bdi/crypto-ca';
+import type { CertificateRepository } from '@transportial/crypto-ca';
 import type { EventBusPort, ClockPort } from '../ports.ts';
 
 // Emits `asr.certificate.renewal-due` for every issued-and-not-yet-revoked
