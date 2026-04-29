@@ -21,8 +21,12 @@
   --token: #d4a64e;        /* aged gold (BVAD/BVOD) */
   --token-soft: rgba(212, 166, 78, 0.16);
   --actor: #8ec881;        /* verified-actor green */
+  --ext: #6c8ea6;          /* slate blue — external systems */
   --link: var(--accent);
   --shadow: 0 1px 0 rgba(0,0,0,0.3);
+  /* Aliases so older callers keep working */
+  --border: var(--rule);
+  --border-strong: var(--rule-strong);
 }
 
 @media (prefers-color-scheme: light) {
@@ -42,6 +46,7 @@
     --token: #8a6515;
     --token-soft: rgba(138, 101, 21, 0.10);
     --actor: #4a7a3f;
+    --ext: #3a5a76;
     --shadow: 0 1px 0 rgba(0,0,0,0.05);
   }
 }

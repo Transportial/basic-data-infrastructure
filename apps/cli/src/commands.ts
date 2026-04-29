@@ -47,6 +47,8 @@ export interface CliIO {
   readFileString(path: string): string;
   writeFileString(path: string, content: string): void;
   env(name: string): string | undefined;
+  pathExists(path: string): boolean;
+  mkdirp(path: string): void;
 }
 
 export class RealCliIO implements CliIO {
@@ -67,6 +69,12 @@ export class RealCliIO implements CliIO {
   env(name: string): string | undefined {
     return process.env[name];
   }
+  pathExists(path: string): boolean {
+    return require('node:fs').existsSync(path);
+  }
+  mkdirp(path: string): void {
+    require('node:fs').mkdirSync(path, { recursive: true });
+  }
 }
 
 export class MemoryCliIO implements CliIO {
@@ -74,6 +82,7 @@ export class MemoryCliIO implements CliIO {
   readonly stderrLines: string[] = [];
   readonly files = new Map<string, string>();
   readonly envs = new Map<string, string>();
+  readonly dirs = new Set<string>();
   stdout(line: string): void {
     this.stdoutLines.push(line);
   }
@@ -90,5 +99,11 @@ export class MemoryCliIO implements CliIO {
   }
   env(name: string): string | undefined {
     return this.envs.get(name);
+  }
+  pathExists(path: string): boolean {
+    return this.files.has(path) || this.dirs.has(path);
+  }
+  mkdirp(path: string): void {
+    this.dirs.add(path);
   }
 }

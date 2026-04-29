@@ -3,6 +3,8 @@
   "include": [
     "apps/*/src/**/*",
     "packages/*/src/**/*",
+    "tests/*/src/**/*",
+    "tests/*/test/**/*",
     "scripts/**/*"
   ],
   "exclude": [

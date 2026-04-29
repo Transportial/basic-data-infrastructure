@@ -155,6 +155,37 @@ PORT=8443 npx -y @transportial/con</code></pre>
       <code>CONNECTOR_ID</code>, <code>CON_AUDIENCE</code>. See
       <a href="docs/SETUP.html">Setup</a> for the full list and production notes.
     </p>
+
+    <h3 id="bootstrap-an-association">Bootstrap a full association deployment</h3>
+    <p>
+      If you're standing up the registers (ASR + ORS) for a new association
+      rather than running a single service, the bundled <code>bdi</code> CLI
+      generates a complete deployment directory in one step:
+    </p>
+    <pre><code>bunx -p @transportial/cli bdi init-association \
+  --id eu.nl.bdi.acme \
+  --name "Acme Logistics Association" \
+  --domain bdi.acme.example \
+  --admin-email ops@acme.example \
+  --out ./acme-deploy
+
+cd ./acme-deploy &amp;&amp; docker compose up -d</code></pre>
+    <p>The generated directory contains:</p>
+    <ul>
+      <li><code>compose.yml</code> — Postgres, Valkey, Keycloak, ASR, ORS (member-side connectors install separately).</li>
+      <li><code>.env.asr</code> and <code>.env.ors</code> — pre-filled with the association id, signing kid, DB credentials, and issuer URLs.</li>
+      <li><code>keys/</code> — freshly generated EdDSA signing JWKs for ASR and ORS.</li>
+      <li><code>db/init-multi-db.sh</code> — bootstraps <code>asr_db</code> and <code>ors_db</code> on first start.</li>
+      <li><code>admin/bootstrap.json</code> — single-use credential to claim the first admin account in Keycloak.</li>
+      <li><code>README.md</code> — exact next-step commands for inviting your first member.</li>
+    </ul>
+    <p>
+      The generator refuses to overwrite an existing deployment, so it's safe
+      to re-run while you tweak flags. Private signing keys land on disk and
+      are acceptable for development; for production, swap them for HSM- or
+      PKCS#11-backed signing as documented in the generated README.
+    </p>
+
     <h3>Embed as a library</h3>
     <pre><code>npm install @transportial/asr
 # or: bun add @transportial/asr</code></pre>

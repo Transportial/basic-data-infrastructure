@@ -121,6 +121,40 @@ Common environment variables: `PORT`, `ASR_ISSUER`, `ORS_ISSUER`,
 `ASSOCIATION_ID`, `CONNECTOR_ID`, `CON_AUDIENCE`. See
 [`docs/SETUP.md`](docs/SETUP.md) for the full list and production notes.
 
+### Bootstrap a full association deployment
+
+If you're standing up the registers (ASR + ORS) for a new association rather
+than running a single service, the bundled `bdi` CLI generates a complete
+deployment directory in one step:
+
+```bash
+bunx -p @transportial/cli bdi init-association \
+  --id eu.nl.bdi.acme \
+  --name "Acme Logistics Association" \
+  --domain bdi.acme.example \
+  --admin-email ops@acme.example \
+  --out ./acme-deploy
+
+cd ./acme-deploy && docker compose up -d
+```
+
+The generated directory contains:
+
+- `compose.yml` — Postgres, Valkey, Keycloak, ASR, ORS (member-side
+  connectors install separately).
+- `.env.asr` and `.env.ors` — pre-filled with the association id, signing
+  kid, DB credentials, and issuer URLs.
+- `keys/` — freshly generated EdDSA signing JWKs for ASR and ORS.
+- `db/init-multi-db.sh` — bootstraps `asr_db` and `ors_db` on first start.
+- `admin/bootstrap.json` — single-use credential to claim the first admin
+  account in Keycloak.
+- `README.md` — exact next-step commands for inviting your first member.
+
+The generator refuses to overwrite an existing deployment, so it's safe to
+re-run while you tweak flags. Private signing keys land on disk and are
+acceptable for development; for production, swap them for HSM- or PKCS#11-
+backed signing as documented in the generated README.
+
 ### Embed as a library
 
 ```bash

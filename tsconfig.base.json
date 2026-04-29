@@ -43,7 +43,13 @@
       "@transportial/config": ["./packages/config/src/index.ts"],
       "@transportial/config/*": ["./packages/config/src/*"],
       "@transportial/testing": ["./packages/testing/src/index.ts"],
-      "@transportial/testing/*": ["./packages/testing/src/*"]
+      "@transportial/testing/*": ["./packages/testing/src/*"],
+      "@transportial/asr": ["./apps/asr/src/index.ts"],
+      "@transportial/asr/*": ["./apps/asr/src/*"],
+      "@transportial/ors": ["./apps/ors/src/index.ts"],
+      "@transportial/ors/*": ["./apps/ors/src/*"],
+      "@transportial/con": ["./apps/con/src/index.ts"],
+      "@transportial/con/*": ["./apps/con/src/*"]
     }
   },
   "exclude": ["node_modules", "dist"]

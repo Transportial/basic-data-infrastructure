@@ -1,0 +1,27 @@
+{
+  "name": "@transportial/e2e-tests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "End-to-end test suite that wires ASR + ORS + CON together in-process and walks them through full BDI flows.",
+  "license": "LicenseRef-PolyForm-Shield-1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@transportial/asr": "workspace:*",
+    "@transportial/ors": "workspace:*",
+    "@transportial/con": "workspace:*",
+    "@transportial/contracts": "workspace:*",
+    "@transportial/crypto": "workspace:*",
+    "@transportial/kernel": "workspace:*",
+    "@transportial/testing": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "bun": ">=1.2.0"
+  }
+}

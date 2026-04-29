@@ -4,6 +4,7 @@
 import { generateKeyPair, publicJwk } from '@transportial/crypto';
 import { makeConnectorId, parseAssociationId, parseEuid } from '@transportial/kernel';
 import type { Command, CliIO, ParsedArgs } from './commands.ts';
+import { initAssociation } from './init-association.ts';
 
 // BDI admin CLI. Commands use a pluggable HTTP `fetch` (so they can drive
 // either an in-process composition or a remote ASR/ORS). The fetch callable
@@ -318,6 +319,7 @@ export const connectorShow: Command = {
 };
 
 export const ALL_COMMANDS: ReadonlyArray<Command> = [
+  initAssociation,
   registerMember,
   runVerifications,
   approveMember,
