@@ -24,10 +24,11 @@ const API_DIR = join(DOCS_DIR, 'api');
 const OUT_DOCS = join(SITE_DIR, 'docs');
 const OUT_API = join(SITE_DIR, 'api');
 
-// Public origin where GitHub Pages serves the built site. Override with
-// BDI_SITE_BASE_URL when deploying to a custom domain. Trailing slash is
-// significant — relative URLs in sitemap.xml are resolved against it.
-const BASE_URL = (process.env.BDI_SITE_BASE_URL ?? 'https://transportial.github.io/basic-data-infrastructure/').replace(/\/?$/, '/');
+// Public origin where the built site is served. Defaults to the project's
+// custom domain; override with BDI_SITE_BASE_URL for staging or forks.
+// Trailing slash is significant — relative URLs in sitemap.xml are resolved
+// against it.
+const BASE_URL = (process.env.BDI_SITE_BASE_URL ?? 'https://basisdatainfrastructuur.com/').replace(/\/?$/, '/');
 
 const NAV = [
   { href: './', label: 'Overview' },
