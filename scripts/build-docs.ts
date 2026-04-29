@@ -82,7 +82,7 @@ function header(activeHref: string, depth: number): string {
     return `<a href="${href}"${isActive ? ' aria-current="page"' : ''}>${item.label}</a>`;
   }).join('');
   return `<header class="site-header">
-    <a href="${prefix || './'}" class="site-brand">BDI Kerncomponenten</a>
+    <a href="${prefix || './'}" class="site-brand"><span class="brand-mark"><span></span><span></span><span></span></span> BDI Kerncomponenten</a>
     <nav class="site-nav">${nav}</nav>
   </header>`;
 }

@@ -9,7 +9,10 @@
 </head>
 <body>
   <header class="site-header">
-    <a href="./" class="site-brand">BDI Kerncomponenten</a>
+    <a href="./" class="site-brand">
+      <span class="brand-mark"><span></span><span></span><span></span></span>
+      BDI Kerncomponenten
+    </a>
     <nav class="site-nav">
       <a href="./" aria-current="page">Overview</a>
       <a href="architecture.html">Architecture</a>
@@ -21,26 +24,51 @@
   </header>
 
   <section class="hero">
-    <h1>Trusted data exchange<br/>between parties that share a chain.</h1>
-    <p class="lede">
-      A source-available toolkit for <strong>federated data exchange</strong>
-      between organisations that share a chain of custody — no central
-      middleman in the data plane, no platform lock-in. Implements the Dutch
-      <strong>Basis Data Infrastructuur (BDI)</strong> as its canonical
-      conformance profile, but the mechanism generalises to any domain where
-      multiple independent parties need cryptographically verifiable trust.
-      Run all three components on your laptop in 60 seconds; deploy them in
-      production with the same code.
-    </p>
-    <div class="hero-cta">
-      <a href="interactive/" class="btn">See it in action</a>
-      <a href="#install-from-npm" class="btn ghost">Install from npm</a>
-      <a href="api/asr.html" class="btn ghost">Browse the API</a>
+    <div class="hero-inner">
+      <span class="eyebrow"><span class="dot"></span>Reference implementation · v0.1.0 · PolyForm Shield 1.0.0</span>
+      <h1>Trusted data exchange<br/>between parties that <em>share a chain</em>.</h1>
+      <p class="lede">
+        A source-available toolkit for federated data exchange — no central
+        middleman in the data plane, no platform lock-in. Implements the Dutch
+        <strong>Basis Data Infrastructuur (BDI)</strong> as its canonical
+        conformance profile, but the mechanism generalises to any domain
+        where multiple independent parties need cryptographically verifiable
+        trust. Run the three components on your laptop in 60 seconds; deploy
+        them in production with the same code.
+      </p>
+      <div class="hero-cta">
+        <a href="interactive/" class="btn">See it in action</a>
+        <a href="#install-from-npm" class="btn ghost">Install from npm</a>
+        <a href="api/asr.html" class="btn ghost">Browse the API</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <span class="feature-num">01 · Production-ready</span>
+      <h3>Built for production, friendly to prototype</h3>
+      <p>The same TypeScript codebase runs in-memory for tests and against Postgres, Valkey, an HSM and your IdP in production. Adapters swap without touching domain code.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-num">02 · Layered</span>
+      <h3>Clean architecture you can read</h3>
+      <p>Each service is layered domain → application → infrastructure → interface. Ports and adapters everywhere. No framework magic, no surprise dependencies.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-num">03 · Verifiable</span>
+      <h3>Cryptography you can audit</h3>
+      <p>EdDSA / ES256 / PS256 only. BDI JWS profile with a strict <code>crit</code> header. RFC 7523 client assertions. A real ACME server and client. X.509 down to the DER bytes.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-num">04 · Source-available</span>
+      <h3>Commercial-friendly licence</h3>
+      <p>PolyForm Shield 1.0.0: free to adopt, fork, run internally, and integrate into your own products — including commercially. Wire-format schemas are additionally Apache 2.0.</p>
     </div>
   </section>
 
   <section class="content">
-    <h2>What is this, and why should you care?</h2>
+    <h2><span class="sigil">§1</span>What is this, and why should you care?</h2>
     <p>
       Whenever multiple organisations need to coordinate on the same
       underlying <em>thing</em> — a shipment, a patient referral, a customs
@@ -72,46 +100,28 @@
       <li>and no single party can — for legal, competitive, or operational
           reasons — be the central data hub.</li>
     </ul>
-  </section>
 
-  <section class="features">
-    <div class="feature">
-      <h3>Built for production, friendly to prototype</h3>
-      <p>The same TypeScript codebase runs in-memory for tests and against Postgres, Valkey, an HSM and your IdP in production. Adapters swap without touching domain code.</p>
-    </div>
-    <div class="feature">
-      <h3>Clean architecture you can read</h3>
-      <p>Each service is layered domain → application → infrastructure → interface. Ports and adapters everywhere. No framework magic, no surprise dependencies.</p>
-    </div>
-    <div class="feature">
-      <h3>Cryptography you can audit</h3>
-      <p>EdDSA / ES256 / PS256 only. BDI JWS profile with a strict <code>crit</code> header. RFC 7523 client assertions. A real ACME server and client. X.509 down to the DER bytes.</p>
-    </div>
-    <div class="feature">
-      <h3>Source-available, commercial-friendly</h3>
-      <p>PolyForm Shield 1.0.0: free to adopt, fork, run internally, and integrate into your own products and services — including commercially. Wire-format schemas (<code>@transportial/contracts</code>) are additionally Apache 2.0 so independent BDI implementations are unrestricted.</p>
-    </div>
-  </section>
-
-  <section class="content">
-    <h2>The three components, in plain language</h2>
+    <h2><span class="sigil">§2</span>The three components, in plain language</h2>
     <p>
       The protocol splits the responsibility for a data exchange into three
       small services. Each does one thing well, and each can be operated by
       a different party. The names are BDI's; the roles are domain-neutral.
     </p>
-    <div class="cards">
-      <a class="card" href="architecture.html#asr">
-        <h3>ASR — the membership office</h3>
-        <p>Decides <em>who</em> can participate. Onboards new members, verifies them against authoritative sources, applies 4-eyes approval, and issues each member a signed identity envelope (<strong>BVAD</strong>) that other parties verify offline against a published trustlist. Ships with verifiers for European legal-entity registries (KvK, KBO, GLEIF, VIES); the verifier interface is pluggable — swap in a medical-board lookup, a financial-licence check, or any authoritative source for your domain.</p>
+    <div class="spec-sheet">
+      <a class="spec-card" href="architecture.html#asr">
+        <span class="num">01 · ASR</span>
+        <h3>The membership office</h3>
+        <p>Decides <strong>who</strong> can participate. Onboards new members, verifies them against authoritative sources, applies 4-eyes approval, and issues each member a signed identity envelope (<span class="token">BVAD</span>) that other parties verify offline against a published trustlist. Verifier interface is pluggable — KvK / KBO / GLEIF / VIES, or whatever your domain needs.</p>
       </a>
-      <a class="card" href="architecture.html#ors">
-        <h3>ORS — the choreographer</h3>
-        <p>Decides <em>what</em> happens in a particular chain. A shipment, a clinical referral pathway, a delegated mandate, a multi-leg settlement, a regulatory case — all are modelled as <em>chain contexts</em>. When a context is set up, the ORS issues a signed envelope (<strong>BVOD</strong>) that says "for this specific case, these specific parties may exchange data."</p>
+      <a class="spec-card" href="architecture.html#ors">
+        <span class="num">02 · ORS</span>
+        <h3>The choreographer</h3>
+        <p>Decides <strong>what</strong> happens in a particular chain. Shipments, referral pathways, delegated mandates, multi-leg settlements, regulatory cases — all are <em>chain contexts</em>. Issues a signed envelope (<span class="token">BVOD</span>) that says "for this case, these specific parties may exchange data."</p>
       </a>
-      <a class="card" href="architecture.html#con">
-        <h3>CON — the doorman at each member</h3>
-        <p>Runs at every participating organisation. Validates inbound BVAD + BVOD against a cached trustlist, asks a local policy engine for the final allow/deny, and dispatches outbound webhooks with retries and backoff. Decisions happen <em>locally</em> — neither register sits in the data plane.</p>
+      <a class="spec-card" href="architecture.html#con">
+        <span class="num">03 · CON</span>
+        <h3>The doorman at each member</h3>
+        <p>Runs at every participating organisation. Validates inbound <span class="token">BVAD</span> + <span class="token">BVOD</span> against a cached trustlist, asks a local policy engine for the final allow/deny, and dispatches outbound webhooks with retries. Decisions happen <em>locally</em> — neither register sits in the data plane.</p>
       </a>
     </div>
     <blockquote>
@@ -123,7 +133,7 @@
       stopping legitimate traffic — and they never see the payloads at all.
     </blockquote>
 
-    <h2 id="install-from-npm">Install from npm</h2>
+    <h2 id="install-from-npm"><span class="sigil">§3</span>Install from npm</h2>
     <p>
       The three core services are published to npm under the
       <a href="https://www.npmjs.com/org/transportial"><code>@transportial</code></a>
@@ -167,7 +177,7 @@ Bun.serve({ port: 8080, fetch });</code></pre>
       and can be consumed independently.
     </p>
 
-    <h2>Or hack on the source in 60 seconds</h2>
+    <h2><span class="sigil">§4</span>Or hack on the source in 60 seconds</h2>
     <p>
       No database to install, no broker to configure, no keys to generate.
       The reference adapters are real implementations that simply keep state
@@ -189,23 +199,23 @@ bun run --filter '@transportial/asr' dev
 bun run --filter '@transportial/ors' dev
 bun run --filter '@transportial/con' dev</code></pre>
 
-    <h2>Where to go next</h2>
+    <h2><span class="sigil">§5</span>Where to go next</h2>
     <div class="cards">
       <a class="card" href="interactive/">
-        <h3>Interactive explorer &rarr;</h3>
+        <h3>Interactive explorer →</h3>
         <p>Click through the components and watch animated flows for member onboarding, BVAD and BVOD issuance, webhook delivery, and cross-register federation.</p>
       </a>
       <a class="card" href="api/asr.html">
-        <h3>OpenAPI references &rarr;</h3>
+        <h3>OpenAPI references →</h3>
         <p>Browse the ASR, ORS and CON HTTP contracts rendered with Scalar. Try requests straight from the page — no signup, no account.</p>
       </a>
       <a class="card" href="docs/">
-        <h3>Written docs &rarr;</h3>
+        <h3>Written docs →</h3>
         <p>Architecture, setup, contribution guide, security policy, and the architecture decision records that explain why things are the way they are.</p>
       </a>
     </div>
 
-    <h2>Who is this for?</h2>
+    <h2><span class="sigil">§6</span>Who is this for?</h2>
     <ul>
       <li><strong>Logistics, transport, and supply-chain integrators</strong> — the originating use case for BDI, and still the most direct fit (carriers, shippers, terminals, customs brokers, platform operators).</li>
       <li><strong>Healthcare and public-health networks</strong> building referral pathways, cross-institution patient data exchange, or clinical-research collaborations across hospitals, GPs, payers, and regulators.</li>
