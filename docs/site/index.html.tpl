@@ -16,7 +16,7 @@
       <a href="interactive/">Interactive</a>
       <a href="api/asr.html">API</a>
       <a href="docs/">Docs</a>
-      <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a>
+      <a href="https://github.com/Transportial/basic-data-infrastructure">GitHub</a>
     </nav>
   </header>
 
@@ -32,7 +32,7 @@
     </p>
     <div class="hero-cta">
       <a href="interactive/" class="btn">See it in action</a>
-      <a href="docs/SETUP.html" class="btn ghost">Get started</a>
+      <a href="#install-from-npm" class="btn ghost">Install from npm</a>
       <a href="api/asr.html" class="btn ghost">Browse the API</a>
     </div>
   </section>
@@ -92,7 +92,51 @@
       </a>
     </div>
 
-    <h2>Try it in 60 seconds</h2>
+    <h2 id="install-from-npm">Install from npm</h2>
+    <p>
+      The three core services are published to npm under the
+      <a href="https://www.npmjs.com/org/transportial"><code>@transportial</code></a>
+      scope and run on Node ≥20 or Bun ≥1.2. Every component ships both a
+      CLI binary and a library entry point, with full TypeScript types.
+    </p>
+    <h3>Run a service straight from the CLI</h3>
+    <pre><code># Associatie Register on :8080
+PORT=8080 npx -y @transportial/asr
+
+# Orkestratie Register on :8081
+PORT=8081 npx -y @transportial/ors
+
+# Connector on :8443
+PORT=8443 npx -y @transportial/con</code></pre>
+    <p>
+      Common environment variables: <code>PORT</code>, <code>ASR_ISSUER</code>,
+      <code>ORS_ISSUER</code>, <code>ASSOCIATION_ID</code>,
+      <code>CONNECTOR_ID</code>, <code>CON_AUDIENCE</code>. See
+      <a href="docs/SETUP.html">Setup</a> for the full list and production notes.
+    </p>
+    <h3>Embed as a library</h3>
+    <pre><code>npm install @transportial/asr
+# or: bun add @transportial/asr</code></pre>
+    <pre><code>import { createServer } from '@transportial/asr';
+
+const { fetch, composition } = await createServer({
+  port: 8080,
+  issuer: 'https://asr.example.org',
+});
+
+// Bun
+Bun.serve({ port: 8080, fetch });</code></pre>
+    <p>
+      <code>@transportial/ors</code> and <code>@transportial/con</code> expose
+      the same <code>createServer</code> shape. The shared building blocks —
+      <code>kernel</code>, <code>contracts</code>, <code>crypto</code>,
+      <code>crypto-ca</code>, <code>events</code>, <code>observability</code>,
+      <code>identity</code>, <code>policy</code>, <code>config</code>,
+      <code>testing</code>, <code>openapi</code> — are published alongside
+      and can be consumed independently.
+    </p>
+
+    <h2>Or hack on the source in 60 seconds</h2>
     <p>
       No database to install, no broker to configure, no keys to generate.
       The reference adapters are real implementations that simply keep state
@@ -102,7 +146,7 @@
 curl -fsSL https://bun.sh/install | bash
 
 # Clone and install
-git clone https://github.com/transportial/basic-data-infrastructure.git
+git clone https://github.com/Transportial/basic-data-infrastructure.git
 cd basic-data-infrastructure
 bun install
 
@@ -141,12 +185,12 @@ bun run --filter '@transportial/con' dev</code></pre>
     </p>
     <p>
       Questions, contributions and "this surprised me" reports are all
-      welcome on <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a>.
+      welcome on <a href="https://github.com/Transportial/basic-data-infrastructure">GitHub</a>.
     </p>
   </section>
 
   <footer class="site-footer">
-    <span>EUPL 1.2 · Transportial &amp; contributors · <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a></span>
+    <span>EUPL 1.2 · Transportial &amp; contributors · <a href="https://github.com/Transportial/basic-data-infrastructure">GitHub</a></span>
   </footer>
 </body>
 </html>
