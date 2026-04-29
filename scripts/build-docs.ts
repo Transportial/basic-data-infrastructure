@@ -24,6 +24,11 @@ const API_DIR = join(DOCS_DIR, 'api');
 const OUT_DOCS = join(SITE_DIR, 'docs');
 const OUT_API = join(SITE_DIR, 'api');
 
+// Public origin where GitHub Pages serves the built site. Override with
+// BDI_SITE_BASE_URL when deploying to a custom domain. Trailing slash is
+// significant — relative URLs in sitemap.xml are resolved against it.
+const BASE_URL = (process.env.BDI_SITE_BASE_URL ?? 'https://transportial.github.io/basic-data-infrastructure/').replace(/\/?$/, '/');
+
 const NAV = [
   { href: './', label: 'Overview' },
   { href: 'architecture.html', label: 'Architecture' },
@@ -267,6 +272,45 @@ async function buildApiPages(): Promise<void> {
   }
 }
 
+async function buildSitemap(): Promise<void> {
+  // Crawler-facing artefacts: sitemap.xml lists every page the build emits;
+  // robots.txt advertises it. Static-asset URLs (.json/.yaml downloads,
+  // /assets/*) are deliberately omitted — they aren't pages to index.
+  const adrs = existsSync(ADR_DIR)
+    ? (await readdir(ADR_DIR)).filter((f) => f.endsWith('.md')).sort()
+    : [];
+
+  const urls: string[] = [
+    '',                          // homepage
+    'architecture.html',
+    'interactive/',
+    'docs/',
+    ...DOC_PAGES.map((p) => `docs/${basename(p.file, '.md')}.html`),
+    ...adrs.map((f) => `docs/adr/${basename(f, '.md')}.html`),
+    'api/asr.html',
+    'api/ors.html',
+    'api/con.html',
+  ];
+
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const entries = urls
+    .map((u) => `  <url><loc>${BASE_URL}${u}</loc><lastmod>${lastmod}</lastmod></url>`)
+    .join('\n');
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${entries}
+</urlset>
+`;
+  await writeFile(join(SITE_DIR, 'sitemap.xml'), sitemap);
+
+  const robots = `User-agent: *
+Allow: /
+
+Sitemap: ${BASE_URL}sitemap.xml
+`;
+  await writeFile(join(SITE_DIR, 'robots.txt'), robots);
+}
+
 async function copyTemplates(): Promise<void> {
   for (const entry of await readdir(SITE_DIR)) {
     if (entry.endsWith('.html.tpl')) {
@@ -290,10 +334,12 @@ async function main(): Promise<void> {
   await copyTemplates();
   await buildDocPages();
   await buildApiPages();
+  await buildSitemap();
   console.log('  ✔ docs pages:   docs/site/docs/*.html');
   console.log('  ✔ api pages:    docs/site/api/*.html');
   console.log('  ✔ interactive:  docs/site/interactive/');
   console.log('  ✔ templates:    docs/site/*.html');
+  console.log('  ✔ crawlers:     docs/site/sitemap.xml + robots.txt');
 }
 
 main().catch((e) => {

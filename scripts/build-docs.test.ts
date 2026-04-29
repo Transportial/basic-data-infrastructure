@@ -70,5 +70,20 @@ describe('docs site build', () => {
     const apiHtml = readFileSync(join(SITE, 'api', 'asr.html'), 'utf8');
     expect(apiHtml).toContain('@scalar/api-reference');
     expect(apiHtml).toContain('data-url="./asr.json"');
+
+    // Crawler artefacts are emitted alongside the rendered pages.
+    expect(existsSync(join(SITE, 'sitemap.xml'))).toBe(true);
+    expect(existsSync(join(SITE, 'robots.txt'))).toBe(true);
+    const sitemap = readFileSync(join(SITE, 'sitemap.xml'), 'utf8');
+    expect(sitemap).toContain('<urlset');
+    // Homepage, one guide, one ADR, one API page — proves every page family
+    // makes it in.
+    expect(sitemap).toMatch(/<loc>https?:\/\/[^<]+\/<\/loc>/);
+    expect(sitemap).toContain('docs/SETUP.html');
+    expect(sitemap).toContain('docs/adr/0001-bun-runtime.html');
+    expect(sitemap).toContain('api/asr.html');
+    const robots = readFileSync(join(SITE, 'robots.txt'), 'utf8');
+    expect(robots).toContain('Sitemap:');
+    expect(robots).toContain('sitemap.xml');
   });
 });
