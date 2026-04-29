@@ -4,12 +4,12 @@
   "description": "Test fixtures, in-memory adapters, and helpers for BDI services.",
   "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     }
   },
   "scripts": {
@@ -20,8 +20,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@transportial/kernel": "^0.1.0",
-    "@transportial/contracts": "^0.1.0"
+    "@transportial/kernel": "workspace:*",
+    "@transportial/contracts": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
@@ -29,7 +29,16 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
   },
   "files": [
     "dist",
@@ -43,6 +52,5 @@
   },
   "engines": {
     "node": ">=20"
-  },
-  "module": "./dist/index.js"
+  }
 }

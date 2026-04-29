@@ -4,12 +4,12 @@
   "description": "BDI Associatie Register (ASR) - member governance, trustlist, BVAD issuance.",
   "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     }
   },
   "bin": {
@@ -22,7 +22,16 @@
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
   },
   "repository": {
     "type": "git",
@@ -39,15 +48,15 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@transportial/kernel": "^0.1.0",
-    "@transportial/contracts": "^0.1.0",
-    "@transportial/config": "^0.1.0",
-    "@transportial/crypto": "^0.1.0",
-    "@transportial/crypto-ca": "^0.1.0",
-    "@transportial/events": "^0.1.0",
-    "@transportial/observability": "^0.1.0",
-    "@transportial/identity": "^0.1.0",
-    "@transportial/testing": "^0.1.0"
+    "@transportial/kernel": "workspace:*",
+    "@transportial/contracts": "workspace:*",
+    "@transportial/config": "workspace:*",
+    "@transportial/crypto": "workspace:*",
+    "@transportial/crypto-ca": "workspace:*",
+    "@transportial/events": "workspace:*",
+    "@transportial/observability": "workspace:*",
+    "@transportial/identity": "workspace:*",
+    "@transportial/testing": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",
@@ -55,6 +64,5 @@
   },
   "engines": {
     "node": ">=20"
-  },
-  "module": "./dist/index.js"
+  }
 }

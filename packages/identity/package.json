@@ -4,12 +4,12 @@
   "description": "Keycloak OIDC access-token verification, eHerkenning SAML broker, pluggable AuthnPort.",
   "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     }
   },
   "scripts": {
@@ -18,12 +18,21 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@transportial/kernel": "^0.1.0",
-    "@transportial/crypto": "^0.1.0"
+    "@transportial/kernel": "workspace:*",
+    "@transportial/crypto": "workspace:*"
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
   },
   "files": [
     "dist",
@@ -41,6 +50,5 @@
   },
   "engines": {
     "node": ">=20"
-  },
-  "module": "./dist/index.js"
+  }
 }
