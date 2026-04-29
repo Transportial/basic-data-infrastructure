@@ -5,6 +5,10 @@ COPY package.json bun.lockb* bun.lock* ./
 COPY tsconfig.base.json tsconfig.json bunfig.toml ./
 COPY apps ./apps
 COPY packages ./packages
+# tests/* are workspace packages too — bun needs each manifest to resolve the
+# workspace graph. Source isn't needed for production builds, so only copy the
+# package.json files.
+COPY tests/e2e/package.json ./tests/e2e/
 RUN bun install --frozen-lockfile
 
 FROM deps AS build
