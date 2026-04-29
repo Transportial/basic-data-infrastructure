@@ -79,6 +79,17 @@ function renderMarkdown(md: string): string {
   return marked.parse(md, { renderer }) as string;
 }
 
+// Sun + moon SVGs for the theme toggle. Both render in the DOM; CSS hides
+// whichever doesn't apply to the active theme so there's no JS swap on click.
+const THEME_TOGGLE_BUTTON = `<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>`;
+
+// Synchronous inline script that applies the saved theme before the page
+// paints — avoids a flash on load when the user has overridden the OS pref.
+const ANTI_FLASH_SNIPPET = `<script>try{var t=localStorage.getItem('bdi-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>`;
+
 function header(activeHref: string, depth: number): string {
   const prefix = '../'.repeat(depth);
   const nav = NAV.map((item) => {
@@ -89,7 +100,7 @@ function header(activeHref: string, depth: number): string {
   }).join('');
   return `<header class="site-header">
     <a href="${prefix || './'}" class="site-brand"><span class="brand-mark"><span></span><span></span><span></span></span> BDI Kerncomponenten</a>
-    <nav class="site-nav">${nav}</nav>
+    <nav class="site-nav">${nav}${THEME_TOGGLE_BUTTON}</nav>
   </header>`;
 }
 
@@ -113,7 +124,9 @@ function docLayout(params: {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${params.title} — BDI Kerncomponenten</title>
+  ${ANTI_FLASH_SNIPPET}
   <link rel="stylesheet" href="${prefix}assets/site.css" />
+  <script src="${prefix}assets/theme.js" defer></script>
 </head>
 <body>
   ${header(params.activeHref, params.depth)}
@@ -230,7 +243,9 @@ async function buildApiPages(): Promise<void> {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${svc.toUpperCase()} API — BDI Kerncomponenten</title>
+  ${ANTI_FLASH_SNIPPET}
   <link rel="stylesheet" href="../assets/site.css" />
+  <script src="../assets/theme.js" defer></script>
   <style>
     body, html { height: 100%; }
     .api-body { padding: 0; }

@@ -29,8 +29,10 @@
   --border-strong: var(--rule-strong);
 }
 
+/* Light palette — applied either when the OS prefers light AND the user
+   hasn't explicitly chosen a theme, or when they've opted into light. */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     --bg: #faf8f1;          /* faint cream paper */
     --bg-raised: #f1ecdf;
     --panel: #fdfbf3;
@@ -50,6 +52,72 @@
     --shadow: 0 1px 0 rgba(0,0,0,0.05);
   }
 }
+
+:root[data-theme="light"] {
+  --bg: #faf8f1;
+  --bg-raised: #f1ecdf;
+  --panel: #fdfbf3;
+  --panel-strong: #f4efde;
+  --fg: #1a1814;
+  --fg-strong: #0a0907;
+  --muted: #6b6353;
+  --rule: #d8d0bb;
+  --rule-strong: #b9ad94;
+  --accent: #b03d24;
+  --accent-soft: rgba(176, 61, 36, 0.08);
+  --accent-strong: #8a2f1c;
+  --token: #8a6515;
+  --token-soft: rgba(138, 101, 21, 0.10);
+  --actor: #4a7a3f;
+  --ext: #3a5a76;
+  --shadow: 0 1px 0 rgba(0,0,0,0.05);
+}
+
+/* Theme toggle button — sits in .site-nav. The two icons live side-by-side
+   in the DOM and CSS swaps which is visible based on the active theme. */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+  transition: background 120ms, border-color 120ms, color 120ms;
+}
+.theme-toggle:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--fg);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.theme-toggle svg { width: 16px; height: 16px; display: block; }
+
+/* Default (no explicit theme, no light-OS): we're in dark, show sun. */
+.theme-toggle .icon-sun  { display: block; }
+.theme-toggle .icon-moon { display: none; }
+
+/* Explicit light wins. */
+:root[data-theme="light"] .theme-toggle .icon-sun  { display: none; }
+:root[data-theme="light"] .theme-toggle .icon-moon { display: block; }
+
+/* Auto-light path (OS light AND user hasn't picked dark). */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .theme-toggle .icon-sun  { display: none; }
+  :root:not([data-theme="dark"]) .theme-toggle .icon-moon { display: block; }
+}
+
+/* Explicit dark always wins back, regardless of OS. */
+:root[data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
 * { box-sizing: border-box; }
 

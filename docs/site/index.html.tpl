@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BDI Kerncomponenten — Federated, chain-of-custody data exchange</title>
   <meta name="description" content="A source-available toolkit for trusted, federated data exchange between parties that share a chain of custody. Reference implementation of the Dutch Basis Data Infrastructuur (BDI), generalisable to logistics, healthcare, finance, energy and beyond." />
+  <script>try{var t=localStorage.getItem('bdi-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
   <link rel="stylesheet" href="assets/site.css" />
+  <script src="assets/theme.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -20,6 +22,10 @@
       <a href="api/asr.html">API</a>
       <a href="docs/">Docs</a>
       <a href="https://github.com/Transportial/basic-data-infrastructure">GitHub</a>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
     </nav>
   </header>
 
