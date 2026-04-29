@@ -49,6 +49,30 @@ for (const d of dirs) {
       }
     }
   }
+
+  // Materialise publishConfig file-pointing overrides into the top-level
+  // fields. npm only honours `registry`, `tag`, `access`, and `provenance`
+  // inside publishConfig (warns + drops the rest). Local dev still uses the
+  // pre-rewrite package.json (main → ./src/...), so this script is only run
+  // immediately before publish.
+  const pc = pkg.publishConfig ?? {};
+  for (const key of ['main', 'module', 'types', 'exports', 'bin'] as const) {
+    if (pc[key] !== undefined) {
+      pkg[key] = pc[key];
+      delete pc[key];
+    }
+  }
+  pkg.publishConfig = pc;
+
+  // npm pkg-fix strips a leading "./" from bin entries; do it here too so
+  // the warning ("script name ... was invalid and removed") doesn't fire.
+  if (pkg.bin && typeof pkg.bin === 'object') {
+    for (const k of Object.keys(pkg.bin)) {
+      const v = pkg.bin[k];
+      if (typeof v === 'string' && v.startsWith('./')) pkg.bin[k] = v.slice(2);
+    }
+  }
+
   writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
   console.log(`prepared ${d} -> ${version}`);
 }

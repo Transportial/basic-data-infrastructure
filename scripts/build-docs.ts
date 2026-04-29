@@ -31,7 +31,7 @@ const NAV = [
   { href: 'api/asr.html', label: 'API' },
   { href: 'docs/', label: 'Docs' },
   {
-    href: 'https://github.com/transportial/basic-data-infrastructure',
+    href: 'https://github.com/Transportial/basic-data-infrastructure',
     label: 'GitHub',
   },
 ];
@@ -89,7 +89,7 @@ function header(activeHref: string, depth: number): string {
 
 function footer(): string {
   return `<footer class="site-footer">
-    <span>PolyForm Shield 1.0.0 · Transportial &amp; contributors · <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a></span>
+    <span>PolyForm Shield 1.0.0 · Transportial &amp; contributors · <a href="https://github.com/Transportial/basic-data-infrastructure">GitHub</a></span>
   </footer>`;
 }
 

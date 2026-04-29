@@ -51,12 +51,14 @@ while (remaining.size > 0) {
 }
 
 const dryRun = process.argv.includes('--dry-run');
+const provenance = process.argv.includes('--provenance');
 console.log(`Publish order (${ordered.length})${dryRun ? ' [DRY RUN]' : ''}:`);
 for (const p of ordered) console.log(`  ${p.name}`);
 
 for (const p of ordered) {
   console.log(`\n=== publishing ${p.name} ===`);
-  const args = ['publish', '--access', 'public', '--provenance'];
+  const args = ['publish', '--access', 'public'];
+  args.push(provenance ? '--provenance' : '--no-provenance');
   if (dryRun) args.push('--dry-run');
   const r = spawnSync('npm', args, { cwd: join(root, p.dir), stdio: 'inherit' });
   if (r.status !== 0) {

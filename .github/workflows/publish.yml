@@ -43,7 +43,7 @@ jobs:
             cp LICENSE "$d/LICENSE"
           done
       - name: Publish
-        run: bun run scripts/publish-all.ts
+        run: bun run scripts/publish-all.ts --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'

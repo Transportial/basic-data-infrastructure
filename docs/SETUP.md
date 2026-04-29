@@ -7,6 +7,11 @@ If anything here doesn't work the way it's described, that's a bug in this
 guide; please open an issue or send a PR. We'd rather fix the docs than
 have the next person struggle.
 
+> **Just want to run a service?** The three components are published to npm.
+> Skip the clone and run `npx -y @transportial/asr` (or `ors` / `con`). See
+> the [README](../README.md#install-from-npm) for the full npm story; this
+> guide covers the development workflow for hacking on the source.
+
 ## What you need
 
 - **Bun** 1.2+ (we develop on 1.3; any 1.2+ will work). If you don't have

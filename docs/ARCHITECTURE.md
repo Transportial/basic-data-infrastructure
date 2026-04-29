@@ -106,9 +106,10 @@ trustlist honest. Everything it does is some flavour of governance.
 
 ### ORS — the choreographer
 
-The ORS owns *what's happening right now*. A shipment, a delegation, a
-temporary right to act on someone's behalf — those are the things it
-tracks, and it issues a BVOD that proves the relationship.
+The ORS owns *what's happening right now*. A shipment, a clinical referral,
+a delegated mandate, a multi-leg settlement, a regulatory case — anything
+that ties a defined set of parties to a defined exchange. Those are the
+things it tracks, and it issues a BVOD that proves the relationship.
 
 - **Aggregate**: `ChainContext` with parties, delegations, and natural-person
   pseudonyms.

@@ -2,7 +2,7 @@
   "name": "bdi-kerncomponenten",
   "version": "0.1.0",
   "private": true,
-  "description": "BDI Kerncomponenten - Reference implementation for Associatie Register (ASR), Orkestratie Register (ORS) and BDI Connector (CON)",
+  "description": "Federated, chain-of-custody data exchange between independent parties — Associatie Register (ASR), Orkestratie Register (ORS), and Connector (CON). Reference implementation of the Dutch Basis Data Infrastructuur (BDI) protocol; generalisable to any domain where parties share data along a chain (logistics, healthcare, settlement, regulatory, energy).",
   "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "packageManager": "bun@1.3.11",
   "workspaces": [

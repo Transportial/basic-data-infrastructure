@@ -4,16 +4,16 @@
   "description": "BDI Connector (CON) - token validation, PEP/PDP, webhook delivery.",
   "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "bin": {
-    "bdi-con": "./dist/bin.js"
+    "bdi-con": "dist/bin.js"
   },
   "files": [
     "dist",
@@ -22,20 +22,11 @@
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true,
-    "main": "./dist/index.js",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
-      }
-    }
+    "provenance": true
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/transportial/basic-data-infrastructure.git",
+    "url": "git+https://github.com/Transportial/basic-data-infrastructure.git",
     "directory": "apps/con"
   },
   "scripts": {
@@ -48,14 +39,14 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@transportial/kernel": "workspace:*",
-    "@transportial/contracts": "workspace:*",
-    "@transportial/config": "workspace:*",
-    "@transportial/crypto": "workspace:*",
-    "@transportial/crypto-ca": "workspace:*",
-    "@transportial/events": "workspace:*",
-    "@transportial/observability": "workspace:*",
-    "@transportial/policy": "workspace:*"
+    "@transportial/kernel": "^0.1.0",
+    "@transportial/contracts": "^0.1.0",
+    "@transportial/config": "^0.1.0",
+    "@transportial/crypto": "^0.1.0",
+    "@transportial/crypto-ca": "^0.1.0",
+    "@transportial/events": "^0.1.0",
+    "@transportial/observability": "^0.1.0",
+    "@transportial/policy": "^0.1.0"
   },
   "devDependencies": {
     "tsup": "^8.3.5",
@@ -63,5 +54,6 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "module": "./dist/index.js"
 }

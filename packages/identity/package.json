@@ -4,12 +4,12 @@
   "description": "Keycloak OIDC access-token verification, eHerkenning SAML broker, pluggable AuthnPort.",
   "license": "LicenseRef-PolyForm-Shield-1.0.0",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
@@ -18,21 +18,12 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@transportial/kernel": "workspace:*",
-    "@transportial/crypto": "workspace:*"
+    "@transportial/kernel": "^0.1.0",
+    "@transportial/crypto": "^0.1.0"
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true,
-    "main": "./dist/index.js",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
-      }
-    }
+    "provenance": true
   },
   "files": [
     "dist",
@@ -41,7 +32,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/transportial/basic-data-infrastructure.git",
+    "url": "git+https://github.com/Transportial/basic-data-infrastructure.git",
     "directory": "packages/identity"
   },
   "devDependencies": {
@@ -50,5 +41,6 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "module": "./dist/index.js"
 }

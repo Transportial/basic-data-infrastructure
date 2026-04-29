@@ -2,30 +2,44 @@
 
 [![License: PolyForm Shield 1.0.0](https://img.shields.io/badge/License-PolyForm_Shield_1.0.0-blue.svg)](https://polyformproject.org/licenses/shield/1.0.0)
 
-> A clean, open-source starting point for anyone building on the Basis Data
-> Infrastructuur (BDI) — the Dutch framework for trusted data sharing across
-> logistics and supply-chain networks.
+> A source-available toolkit for **trusted, federated data exchange between
+> parties that share a chain of custody** — no central middleman in the data
+> plane, no platform lock-in. Implements the Dutch **Basis Data Infrastructuur
+> (BDI)** protocol as its canonical conformance profile.
 
 ## What is this, and why should I care?
 
-Modern supply chains move faster than the systems that try to track them.
-Carriers, shippers, terminals, customs brokers and platform operators all hold
-fragments of the same shipment, but stitching those fragments together is
-slow, expensive, and full of one-off integrations.
+Whenever multiple organisations need to coordinate on the same underlying
+*thing* — a shipment, a patient referral, a customs declaration, a financial
+settlement, an energy-grid dispatch, a regulatory filing — each party usually
+holds a fragment of the truth. Stitching those fragments together is slow,
+expensive, and dominated by one-off bilateral integrations.
 
-The **Basis Data Infrastructuur (BDI)** is a Dutch national initiative that
-solves this problem the same way the web solved document sharing: not by
-forcing everyone onto a single platform, but by agreeing on a small set of
-protocols. With BDI, two parties who have never met before can share data
-about a shipment **once they prove they belong together in a chain**, with
-cryptographic guarantees, without a central middleman holding their data.
+The pattern that solves it is older than any one industry: agree on a tiny
+set of **protocols** instead of forcing everyone onto a single **platform**.
+Two parties who have never met before share data about a shared object **once
+they prove they belong together in a chain of custody**, with cryptographic
+guarantees, and without a central operator sitting in the request path.
 
-This repository is a **reference implementation of the three BDI core
-components**. You can run it on your laptop in 60 seconds, point it at your
-own data, and use it to:
+This repository implements that pattern. Concretely, it is a reference
+implementation of the **Basis Data Infrastructuur (BDI)** — the Dutch national
+initiative that originated this design for logistics and supply chains — but
+the mechanism (federated identity register, chain-of-custody token issuer,
+local policy enforcement at each member) generalises to any domain where:
 
-- Prototype an integration before committing to a vendor.
-- Validate your understanding of the BDI specifications.
+- Multiple independent parties need to exchange data,
+- Membership and counterparty trust must be cryptographically verifiable,
+- A specific exchange is bounded by a *chain* (referral pathway, shipment,
+  custody chain, transaction graph, regulatory case file), and
+- No single party can — for legal, competitive, or operational reasons — be
+  the central data hub.
+
+You can run all three components on your laptop in 60 seconds, point them at
+your own data, and use this codebase to:
+
+- Prototype a federated integration before committing to a vendor.
+- Validate your understanding of the BDI specifications, or use them as a
+  starting point for an analogous protocol in a different domain.
 - Bootstrap a production deployment — the in-memory adapters here are
   drop-in replaceable with Postgres, Valkey, an HSM, and your favourite
   identity provider.
@@ -40,24 +54,31 @@ against the same protocol.
 
 ## The three components, in plain language
 
-BDI splits the responsibility for a data exchange into three small services.
-Each does one thing well, and each can be operated by a different party.
+The protocol splits the responsibility for a data exchange into three small
+services. Each does one thing well, and each can be operated by a different
+party. The names are BDI's, but the roles are domain-neutral.
 
 ### ASR — Associatie Register ("the membership office")
 
 Decides **who is allowed to participate**. New members are onboarded,
-verified against authoritative sources (KvK, KBO, GLEIF, VIES), and approved
-by two independent administrators ("4-eyes"). Once admitted, a member
-receives a signed identity document — a **BVAD** — that other parties can
-verify offline against a published trustlist.
+verified against authoritative sources, and approved by two independent
+administrators ("4-eyes"). Once admitted, a member receives a signed identity
+document — a **BVAD** — that other parties can verify offline against a
+published trustlist.
+
+The reference implementation ships with verifiers for European legal-entity
+registries (**KvK**, **KBO**, **GLEIF**, **VIES**) — natural for BDI's
+logistics origin — but the verifier interface is pluggable: swap in a
+medical-board lookup, a financial-licence check, an accreditation registry,
+or any other authoritative source for the domain you're modelling.
 
 ### ORS — Orkestratie Register ("the choreographer")
 
-Decides **what happens in a particular chain of custody**. A shipment, a
-delegation, a temporary right to act on behalf of someone else — all of these
-live in the ORS as *chain contexts*. When a context is set up, the ORS issues
-a signed envelope — a **BVOD** — that says "for this specific shipment, these
-specific parties may exchange data."
+Decides **what happens in a particular chain**. A shipment, a clinical
+referral pathway, a delegated mandate, a multi-leg settlement, a regulatory
+case — all of these are modelled as *chain contexts*. When a context is set
+up, the ORS issues a signed envelope — a **BVOD** — that says "for this
+specific case, these specific parties may exchange data."
 
 ### CON — BDI Connector ("the doorman at each member")
 
@@ -68,12 +89,70 @@ local policy engine for the final allow/deny. Decisions are made **locally**
 — neither register is in the data plane.
 
 > **Why the dual-token boundary matters.** Most data-sharing platforms put
-> the operator in the middle of every call. BDI deliberately doesn't.
+> the operator in the middle of every call — and therefore see, log, and
+> potentially leak every payload. This design deliberately doesn't.
 > Connectors verify cryptographic envelopes against a cached trustlist, so
 > the registers can be temporarily unreachable without stopping legitimate
-> traffic — and they never see the payloads.
+> traffic — and they never see the payloads at all.
 
-## Quick start
+## Install from npm
+
+The three core services are published to npm under the
+[`@transportial`](https://www.npmjs.com/org/transportial) scope and run on
+**Node ≥20** or **Bun ≥1.2**.
+
+### Run a service straight from the CLI
+
+Each component ships an executable; `npx` (or `bunx`) boots it without a
+permanent install:
+
+```bash
+# Associatie Register on :8080
+PORT=8080 npx -y @transportial/asr
+
+# Orkestratie Register on :8081
+PORT=8081 npx -y @transportial/ors
+
+# Connector on :8443
+PORT=8443 npx -y @transportial/con
+```
+
+Common environment variables: `PORT`, `ASR_ISSUER`, `ORS_ISSUER`,
+`ASSOCIATION_ID`, `CONNECTOR_ID`, `CON_AUDIENCE`. See
+[`docs/SETUP.md`](docs/SETUP.md) for the full list and production notes.
+
+### Embed as a library
+
+```bash
+npm install @transportial/asr
+# or: bun add @transportial/asr
+```
+
+```ts
+import { createServer } from '@transportial/asr';
+
+const { fetch, composition } = await createServer({
+  port: 8080,
+  issuer: 'https://asr.example.org',
+});
+
+// Bun
+Bun.serve({ port: 8080, fetch });
+
+// Node 20+: any web-fetch adapter, e.g.
+// import { createServer as createNodeServer } from 'node:http';
+// createNodeServer(yourFetchAdapter(fetch)).listen(8080);
+```
+
+`@transportial/ors` and `@transportial/con` expose the same `createServer`
+shape. The shared building blocks — `@transportial/kernel`,
+`@transportial/contracts`, `@transportial/crypto`, `@transportial/crypto-ca`,
+`@transportial/events`, `@transportial/observability`,
+`@transportial/identity`, `@transportial/policy`, `@transportial/config`,
+`@transportial/testing`, `@transportial/openapi` — are published alongside
+and can be consumed independently.
+
+## Quick start (from source)
 
 ```bash
 # Install Bun 1.2+ if you don't have it
@@ -166,13 +245,25 @@ feels like to work on the codebase:
 
 ## Who is this for?
 
-- **Engineers at logistics platforms, carriers, or terminals** evaluating
-  BDI for a real integration.
-- **Public-sector teams** working on national or sectoral data spaces.
+- **Logistics, transport, and supply-chain integrators** — the originating
+  use case for BDI, and still the most direct fit (carriers, shippers,
+  terminals, customs brokers, platform operators).
+- **Healthcare and public-health networks** building referral pathways,
+  cross-institution patient data exchange, or clinical-research
+  collaborations across hospitals, GPs, payers, and regulators.
+- **Financial settlement, KYC, and trade-finance networks** where multiple
+  institutions need to coordinate on a transaction graph without one party
+  becoming the central operator.
+- **Energy, utilities, and grid-balancing operators** sharing dispatch,
+  metering, or congestion data across TSOs, DSOs, aggregators, and prosumers.
+- **Regulatory and compliance reporting** chains — supervisor, supervised
+  entity, auditor, sectoral register — where authenticity and provenance
+  must be verifiable end-to-end.
+- **Public-sector teams** building national or sectoral data spaces, and
+  anyone building on **EU data-space concepts** (Gaia-X, IDSA, EONA-X) —
+  the trust machinery here maps directly onto those frameworks.
 - **Researchers and students** who want a working, auditable example of a
-  modern federated data-sharing protocol.
-- **Anyone building on EU data-space concepts** (Gaia-X, IDSA, EONA-X) —
-  much of the trust machinery here is directly applicable.
+  modern federated data-sharing protocol to study or extend.
 
 Contributions, questions, and "this surprised me" reports are all welcome.
 See [CONTRIBUTING.md](docs/CONTRIBUTING.md) to get involved.
