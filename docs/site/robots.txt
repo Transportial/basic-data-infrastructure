@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://transportial.github.io/basic-data-infrastructure/sitemap.xml
+Sitemap: https://basisdatainfrastructuur.com/sitemap.xml
