@@ -11,7 +11,7 @@ describe('docs site build', () => {
   test('produces the expected pages and wires navigation', () => {
     // Clean up anything from a previous run so we prove the build generates
     // the files we rely on from scratch.
-    for (const f of ['index.html', 'architecture.html']) {
+    for (const f of ['index.html', 'architecture.html', 'recipes.html']) {
       const p = join(SITE, f);
       if (existsSync(p)) rmSync(p);
     }
@@ -32,9 +32,20 @@ describe('docs site build', () => {
     });
     expect(build.status).toBe(0);
 
-    // Landing + architecture pages rendered from templates
+    // Landing + architecture + recipes pages rendered from templates
     expect(existsSync(join(SITE, 'index.html'))).toBe(true);
     expect(existsSync(join(SITE, 'architecture.html'))).toBe(true);
+    expect(existsSync(join(SITE, 'recipes.html'))).toBe(true);
+
+    // Recipes page surfaces the OTM recipe and links to the recipe package.
+    const recipes = readFileSync(join(SITE, 'recipes.html'), 'utf8');
+    expect(recipes).toContain('@transportial/recipe-otm');
+    expect(recipes).toContain('OTM 5.8');
+
+    // Index nav advertises Recipes and the mobile hamburger.
+    const index = readFileSync(join(SITE, 'index.html'), 'utf8');
+    expect(index).toContain('href="recipes.html"');
+    expect(index).toContain('id="nav-toggle"');
 
     // Interactive stays untouched (authored directly)
     expect(existsSync(join(SITE, 'interactive', 'index.html'))).toBe(true);
@@ -82,6 +93,7 @@ describe('docs site build', () => {
     expect(sitemap).toContain('docs/SETUP.html');
     expect(sitemap).toContain('docs/adr/0001-bun-runtime.html');
     expect(sitemap).toContain('api/asr.html');
+    expect(sitemap).toContain('recipes.html');
     const robots = readFileSync(join(SITE, 'robots.txt'), 'utf8');
     expect(robots).toContain('Sitemap:');
     expect(robots).toContain('sitemap.xml');

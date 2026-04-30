@@ -44,6 +44,8 @@
       "@transportial/config/*": ["./packages/config/src/*"],
       "@transportial/testing": ["./packages/testing/src/index.ts"],
       "@transportial/testing/*": ["./packages/testing/src/*"],
+      "@transportial/recipe-otm": ["./packages/recipe-otm/src/index.ts"],
+      "@transportial/recipe-otm/*": ["./packages/recipe-otm/src/*"],
       "@transportial/asr": ["./apps/asr/src/index.ts"],
       "@transportial/asr/*": ["./apps/asr/src/*"],
       "@transportial/ors": ["./apps/ors/src/index.ts"],

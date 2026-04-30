@@ -34,7 +34,7 @@ import {
 } from '@transportial/events';
 import { buildRouter, type HealthProbe } from './interface/http/routes.ts';
 import type { Router } from './interface/http/router.ts';
-import type { EventBusPort, HttpClientPort } from './application/ports.ts';
+import type { EventBusPort, HttpClientPort, PayloadInspectorPort } from './application/ports.ts';
 import {
   buildAsrEventConsumer,
   buildOrsEventConsumer,
@@ -70,6 +70,10 @@ export interface ConConfig {
   readonly rateLimit?: { limit: number; windowMs: number };
   readonly upstreams?: ReadonlyArray<UpstreamRoute>;
   readonly forwardClient?: HeaderedHttpClient;
+  // Recipes plug in here as inspectors. Each is consulted in order; any
+  // matching inspector that returns ok=false short-circuits the request with
+  // an `invalid-payload` error before the PDP runs.
+  readonly inspectors?: ReadonlyArray<PayloadInspectorPort>;
   readonly metrics?: MetricsRegistry;
   readonly readinessProbes?: ReadonlyArray<HealthProbe>;
   readonly startupProbes?: ReadonlyArray<HealthProbe>;
@@ -178,6 +182,7 @@ export function composeCon(config: ConConfig): ConComposition {
   const proxyForward = new ProxyForwardUseCase(verifyIncoming, forwardClient, {
     routes: config.upstreams ?? [],
     stripBdiHeaders: true,
+    ...(config.inspectors !== undefined ? { inspectors: config.inspectors } : {}),
   });
   const metrics = config.metrics ?? new MetricsRegistry();
   const bvodCache = config.bvodCache ?? new InMemoryBvodCache();

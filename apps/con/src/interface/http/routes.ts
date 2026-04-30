@@ -115,6 +115,14 @@ export function buildRouter(deps: RouterDeps): Router {
     });
     if (!r.ok) {
       const status = statusForProxyError(r.error.type);
+      if (r.error.type === 'invalid-payload') {
+        return json(status, {
+          error: r.error.type,
+          inspector: r.error.inspector,
+          reason: r.error.reason,
+          ...(r.error.details ? { details: r.error.details } : {}),
+        });
+      }
       return json(status, { error: r.error.type });
     }
     return { status: r.value.status, headers: r.value.headers, body: r.value.body };
@@ -216,6 +224,8 @@ function statusForProxyError(type: string): number {
       return 401;
     case 'upstream-failure':
       return 502;
+    case 'invalid-payload':
+      return 422;
     default:
       return 500;
   }

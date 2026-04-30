@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Transportial and contributors
 
 import { err, ok, type Result } from '@transportial/kernel';
-import type { HttpClientPort } from '../ports.ts';
+import type { HttpClientPort, PayloadInspectorPort } from '../ports.ts';
 import type { VerifyIncomingUseCase } from './verify-incoming.ts';
 
 export interface UpstreamRoute {
@@ -18,6 +18,7 @@ export interface ProxyForwardConfig {
   readonly timeoutMs?: number;
   readonly stripBdiHeaders?: boolean;
   readonly forwardHeaders?: ReadonlyArray<string>;
+  readonly inspectors?: ReadonlyArray<PayloadInspectorPort>;
 }
 
 export interface ProxyRequest {
@@ -43,7 +44,8 @@ export type ProxyError =
   | { type: 'verify-failed'; reason: string }
   | { type: 'upstream-failure'; message: string }
   | { type: 'mtls-required' }
-  | { type: 'mtls-mismatch' };
+  | { type: 'mtls-mismatch' }
+  | { type: 'invalid-payload'; inspector: string; reason: string; details?: ReadonlyArray<string> };
 
 export interface HeaderedHttpClient extends HttpClientPort {
   request(
@@ -67,11 +69,19 @@ export class ProxyForwardUseCase {
   ) {}
 
   async execute(req: ProxyRequest): Promise<Result<ProxyResponse, ProxyError>> {
+    // Recipes (e.g. OTM) inspect the payload before authorisation. They run
+    // before verify so any tags they extract can flow into the PDP resource.
+    const inspection = await this.runInspectors(req);
+    if (!inspection.ok) return err(inspection.error);
+    const resource = inspection.resourceTags
+      ? { ...req.resource, tags: { ...(req.resource.tags ?? {}), ...inspection.resourceTags } }
+      : req.resource;
+
     const verified = await this.verify.execute({
       bvad: req.bvad,
       bvod: req.bvod,
       action: req.action,
-      resource: req.resource,
+      resource,
     });
     if (!verified.ok) return err({ type: 'verify-failed', reason: verified.error.type });
 
@@ -96,6 +106,31 @@ export class ProxyForwardUseCase {
     } catch (e) {
       return err({ type: 'upstream-failure', message: e instanceof Error ? e.message : 'unknown' });
     }
+  }
+
+  private async runInspectors(req: ProxyRequest): Promise<
+    | { ok: true; resourceTags?: Readonly<Record<string, string>> }
+    | { ok: false; error: Extract<ProxyError, { type: 'invalid-payload' }> }
+  > {
+    const inspectors = this.config.inspectors;
+    if (!inspectors || inspectors.length === 0) return { ok: true };
+    const contentType = (req.headers['content-type'] ?? req.headers['Content-Type'] ?? '').toString();
+    const inspectionReq = { method: req.method, path: req.path, contentType, body: req.body };
+    let merged: Record<string, string> | undefined;
+    for (const inspector of inspectors) {
+      if (!inspector.matches(inspectionReq)) continue;
+      const result = await inspector.inspect(inspectionReq);
+      if (!result.ok) {
+        const detail: Extract<ProxyError, { type: 'invalid-payload' }> = result.details
+          ? { type: 'invalid-payload', inspector: inspector.name, reason: result.reason, details: result.details }
+          : { type: 'invalid-payload', inspector: inspector.name, reason: result.reason };
+        return { ok: false, error: detail };
+      }
+      if (result.resourceTags) {
+        merged = { ...(merged ?? {}), ...result.resourceTags };
+      }
+    }
+    return merged ? { ok: true, resourceTags: merged } : { ok: true };
   }
 
   private resolveUpstream(path: string): UpstreamRoute | null {

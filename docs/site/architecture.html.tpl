@@ -14,9 +14,15 @@
       <span class="brand-mark"><span></span><span></span><span></span></span>
       BDI Kerncomponenten
     </a>
-    <nav class="site-nav">
+    <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-nav">
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+    </button>
+    <nav class="site-nav" id="site-nav">
       <a href="./">Overview</a>
       <a href="architecture.html" aria-current="page">Architecture</a>
+      <a href="recipes.html">Recipes</a>
       <a href="interactive/">Interactive</a>
       <a href="api/asr.html">API</a>
       <a href="docs/">Docs</a>

@@ -33,6 +33,7 @@ const BASE_URL = (process.env.BDI_SITE_BASE_URL ?? 'https://basisdatainfrastruct
 const NAV = [
   { href: './', label: 'Overview' },
   { href: 'architecture.html', label: 'Architecture' },
+  { href: 'recipes.html', label: 'Recipes' },
   { href: 'interactive/', label: 'Interactive' },
   { href: 'api/asr.html', label: 'API' },
   { href: 'docs/', label: 'Docs' },
@@ -86,6 +87,14 @@ const THEME_TOGGLE_BUTTON = `<button type="button" id="theme-toggle" class="them
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>`;
 
+// Hamburger button shown on small screens. CSS hides it on wide viewports.
+// theme.js wires the click to toggle the .open class on the nav.
+const NAV_TOGGLE_BUTTON = `<button type="button" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </button>`;
+
 // Synchronous inline script that applies the saved theme before the page
 // paints — avoids a flash on load when the user has overridden the OS pref.
 const ANTI_FLASH_SNIPPET = `<script>try{var t=localStorage.getItem('bdi-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>`;
@@ -100,7 +109,8 @@ function header(activeHref: string, depth: number): string {
   }).join('');
   return `<header class="site-header">
     <a href="${prefix || './'}" class="site-brand"><span class="brand-mark"><span></span><span></span><span></span></span> BDI Kerncomponenten</a>
-    <nav class="site-nav">${nav}${THEME_TOGGLE_BUTTON}</nav>
+    ${NAV_TOGGLE_BUTTON}
+    <nav class="site-nav" id="site-nav">${nav}${THEME_TOGGLE_BUTTON}</nav>
   </header>`;
 }
 
@@ -299,6 +309,7 @@ async function buildSitemap(): Promise<void> {
   const urls: string[] = [
     '',                          // homepage
     'architecture.html',
+    'recipes.html',
     'interactive/',
     'docs/',
     ...DOC_PAGES.map((p) => `docs/${basename(p.file, '.md')}.html`),

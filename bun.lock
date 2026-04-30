@@ -245,6 +245,18 @@
         "typescript": "^5.7.2",
       },
     },
+    "packages/recipe-otm": {
+      "name": "@transportial/recipe-otm",
+      "version": "0.1.0",
+      "dependencies": {
+        "@transportial/con": "workspace:*",
+        "@transportial/kernel": "workspace:*",
+      },
+      "devDependencies": {
+        "tsup": "^8.3.5",
+        "typescript": "^5.7.2",
+      },
+    },
     "packages/testing": {
       "name": "@transportial/testing",
       "version": "0.1.0",
@@ -462,6 +474,8 @@
     "@transportial/ors-portal-admin": ["@transportial/ors-portal-admin@workspace:apps/ors-portal-admin"],
 
     "@transportial/policy": ["@transportial/policy@workspace:packages/policy"],
+
+    "@transportial/recipe-otm": ["@transportial/recipe-otm@workspace:packages/recipe-otm"],
 
     "@transportial/testing": ["@transportial/testing@workspace:packages/testing"],
 

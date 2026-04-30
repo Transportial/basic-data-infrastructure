@@ -15,9 +15,15 @@
       <span class="brand-mark"><span></span><span></span><span></span></span>
       BDI Kerncomponenten
     </a>
-    <nav class="site-nav">
+    <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-nav">
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+    </button>
+    <nav class="site-nav" id="site-nav">
       <a href="./" aria-current="page">Overview</a>
       <a href="architecture.html">Architecture</a>
+      <a href="recipes.html">Recipes</a>
       <a href="interactive/">Interactive</a>
       <a href="api/asr.html">API</a>
       <a href="docs/">Docs</a>
@@ -238,6 +244,10 @@ bun run --filter '@transportial/con' dev</code></pre>
 
     <h2><span class="sigil">§5</span>Where to go next</h2>
     <div class="cards">
+      <a class="card" href="recipes.html">
+        <h3>Domain recipes →</h3>
+        <p>Optional add-ons that teach the connector about real data shapes — OTM 5.8 for transport today, eFTI / FHIR / ISO 20022 on the roadmap. Validate, tag, and route domain payloads without putting a schema in your backend.</p>
+      </a>
       <a class="card" href="interactive/">
         <h3>Interactive explorer →</h3>
         <p>Click through the components and watch animated flows for member onboarding, BVAD and BVOD issuance, webhook delivery, and cross-register federation.</p>
