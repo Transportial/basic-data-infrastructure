@@ -149,3 +149,10 @@
   .interactive-layout { grid-template-columns: 1fr; }
   .interactive-sidebar { order: 2; }
 }
+
+@media (max-width: 600px) {
+  .interactive-layout { padding: 16px; gap: 16px; min-height: 0; }
+  .interactive-sidebar { padding: 16px; border-radius: 8px; }
+  .interactive-sidebar h1 { font-size: 20px; }
+  .flow-btn { padding: 12px 14px; font-size: 14px; }
+}

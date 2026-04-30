@@ -11,14 +11,23 @@
 </head>
 <body class="interactive-page">
   <header class="site-header">
-    <a href="../" class="site-brand">BDI Kerncomponenten</a>
-    <nav class="site-nav">
+    <a href="../" class="site-brand">
+      <span class="brand-mark"><span></span><span></span><span></span></span>
+      BDI Kerncomponenten
+    </a>
+    <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-nav">
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+    </button>
+    <nav class="site-nav" id="site-nav">
       <a href="../">Overview</a>
       <a href="../architecture.html">Architecture</a>
+      <a href="../recipes.html">Recipes</a>
       <a href="./" aria-current="page">Interactive</a>
       <a href="../api/asr.html">API</a>
       <a href="../docs/">Docs</a>
-      <a href="https://github.com/transportial/basic-data-infrastructure">GitHub</a>
+      <a href="https://github.com/Transportial/basic-data-infrastructure">GitHub</a>
       <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
