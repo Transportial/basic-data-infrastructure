@@ -229,17 +229,22 @@ See [docs/SETUP.md](docs/SETUP.md) for a deeper walkthrough, and
 │   ├── con/              # Connector
 │   ├── cli/              # Admin CLI (bdi register-member, approve, ...)
 │   └── asr-portal-admin/ # React + Vite admin portal
-├── packages/             # Shared libraries
-│   ├── kernel/           # Pure domain primitives (PolyForm Shield 1.0.0)
-│   ├── contracts/        # Wire-format schemas (PolyForm Shield 1.0.0 / Apache 2.0)
-│   ├── crypto/           # BDI JWS profile, RFC 7523 verifier, key generation
-│   ├── crypto-ca/        # RFC 8555 ACME server + client, CSR parser, X.509 issuer
-│   ├── config/           # Strict env parsing
-│   ├── events/           # Typed events + Valkey Streams emulator + rate limiter
-│   ├── policy/           # PDP interface + embedded Cedar-like engine
-│   ├── observability/    # Structured logs, metrics, trace ctx, OTLP exporter
-│   ├── openapi/          # OpenAPI 3.1 document builder
-│   └── testing/          # Test fixtures and fakes
+├── packages/                       # Shared libraries
+│   ├── kernel/                     # Pure domain primitives (PolyForm Shield 1.0.0)
+│   ├── contracts/                  # Wire-format schemas (PolyForm Shield 1.0.0 / Apache 2.0)
+│   ├── crypto/                     # BDI JWS profile, RFC 7523 verifier, key generation
+│   ├── crypto-ca/                  # RFC 8555 ACME server + client, CSR parser, X.509 issuer
+│   ├── config/                     # Strict env parsing
+│   ├── events/                     # Typed events + Valkey Streams emulator + rate limiter
+│   ├── policy/                     # PDP interface + embedded Cedar-like engine
+│   ├── observability/              # Structured logs, metrics, trace ctx, OTLP exporter
+│   ├── openapi/                    # OpenAPI 3.1 document builder
+│   ├── testing/                    # Test fixtures and fakes
+│   ├── recipe-otm/                 # OTM 5.8 connector recipe (Open Transportation Model)
+│   ├── recipe-efti/                # eFTI 1.0 connector recipe (EU freight, road)
+│   ├── recipe-fhir-r5/             # FHIR R5 connector recipe (referrals, IPS)
+│   ├── recipe-mmt-rsm/             # UN/CEFACT MMT-RSM connector recipe (customs, shipping)
+│   └── recipe-iso20022-pacs008/    # ISO 20022 pacs.008 connector recipe (settlement)
 ├── infra/
 │   ├── docker/           # Dockerfiles + Compose (Postgres, Valkey, Keycloak,
 │   │                     #   Jaeger, Prometheus, Grafana, portal)
@@ -268,6 +273,54 @@ feels like to work on the codebase:
 5. **Protocol as code.** `@transportial/contracts` is the single source of truth for
    BVAD/BVOD/trustlist/event shapes. No service re-declares a claim, so the
    wire format never drifts.
+
+## Domain recipes
+
+The Connector core stays domain-neutral on purpose: BVAD says *who*, BVOD
+says *which chain*, the Connector enforces the boundary. **Recipes** are an
+optional layer on top — small packages that teach the connector about a
+specific data shape, validate inbound payloads against a structural surface,
+and surface domain identifiers as PDP resource tags so policy can authorise
+on real attributes (e.g. *only consignments tagged for this chain context*,
+*only patient summaries whose subject matches the BVOD subject*). Each
+recipe ships as a standalone package with its own release cadence and the
+same shape: a `compose<X>Recipe(...)` factory returning one or more
+`PayloadInspectorPort` instances.
+
+| Package | Domain | Spec |
+| --- | --- | --- |
+| [`@transportial/recipe-otm`](packages/recipe-otm) | Transport | [OTM 5.8](https://otm-api-spec.redocly.app/api/5.8/otm) — Open Transportation Model |
+| [`@transportial/recipe-efti`](packages/recipe-efti) | Freight (EU regulation) | [eFTI](https://eur-lex.europa.eu/eli/reg/2020/1056/oj) — Regulation (EU) 2020/1056 cross-border road common dataset |
+| [`@transportial/recipe-fhir-r5`](packages/recipe-fhir-r5) | Healthcare | [FHIR R5](https://hl7.org/fhir/R5/) — clinical referrals + patient-summary exchange |
+| [`@transportial/recipe-mmt-rsm`](packages/recipe-mmt-rsm) | Customs / multimodal | [UN/CEFACT MMT-RSM](https://unece.org/trade/uncefact) — multimodal transport reference semantic model |
+| [`@transportial/recipe-iso20022-pacs008`](packages/recipe-iso20022-pacs008) | Financial settlement | [ISO 20022 pacs.008](https://www.iso20022.org/) — FI-to-FI customer credit transfer |
+
+```ts
+import { composeCon } from '@transportial/con';
+import { composeOtmRecipe } from '@transportial/recipe-otm';
+import { composeFhirR5Recipe } from '@transportial/recipe-fhir-r5';
+
+const otm = composeOtmRecipe({ pathPrefixes: ['/otm'] });
+const fhir = composeFhirR5Recipe({ pathPrefixes: ['/fhir'] });
+
+const con = composeCon({
+  asrIssuer: 'https://asr.example.org',
+  orsIssuer: 'https://ors.example.org',
+  associationId: 'eu.nl.bdi.acme',
+  ownConnectorId: 'urn:bdi:connector:me',
+  audience: 'urn:bdi:association:eu.nl.bdi.acme',
+  inspectors: [...otm.inspectors, ...fhir.inspectors],
+});
+```
+
+Each recipe ships a small, fast structural validator out of the box and
+exposes a `Validator` interface so production deployments can plug in a
+full-schema implementation (Ajv against the upstream JSON Schema, an
+HL7 profile validator, an XSD-derived JSON Schema, etc.) without changing
+the wiring.
+
+See the [recipes catalogue](https://basisdatainfrastructuur.com/recipes.html)
+for installation, wiring, and per-recipe details.
 
 ## Documentation
 

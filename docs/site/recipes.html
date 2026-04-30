@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Recipes — BDI Kerncomponenten</title>
-  <meta name="description" content="Domain recipes plug into the BDI Connector to validate and transport real-world data shapes — OTM 5.8 for transport today, more on the way." />
+  <meta name="description" content="Domain recipes plug into the BDI Connector to validate and transport real-world data shapes — OTM 5.8, eFTI, FHIR R5, UN/CEFACT MMT-RSM, and ISO 20022 pacs.008 today, with more on the way." />
   <script>try{var t=localStorage.getItem('bdi-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
   <link rel="stylesheet" href="assets/site.css" />
   <script src="assets/theme.js" defer></script>
@@ -44,13 +44,14 @@
         BVOD says <em>which chain</em>, the Connector enforces the boundary.
         <strong>Recipes</strong> are the layer on top — small, optional add-ons
         that teach the connector about a specific data shape (a transport
-        consignment, a customs declaration, a clinical referral) so it can
-        validate it, tag it, and route it without your backend reinventing the
-        protocol.
+        consignment, a customs declaration, a clinical referral, an interbank
+        settlement) so it can validate it, tag it, and route it without your
+        backend reinventing the protocol. Five recipes ship today: OTM 5.8,
+        eFTI, FHIR R5, UN/CEFACT MMT-RSM, and ISO 20022 pacs.008.
       </p>
       <div class="hero-cta">
-        <a href="#otm" class="btn">See the OTM recipe</a>
-        <a href="https://github.com/Transportial/basic-data-infrastructure/tree/main/packages/recipe-otm" class="btn ghost">Source on GitHub</a>
+        <a href="#available" class="btn">See the catalogue</a>
+        <a href="https://github.com/Transportial/basic-data-infrastructure/tree/main/packages" class="btn ghost">Source on GitHub</a>
       </div>
     </div>
   </section>
@@ -82,6 +83,13 @@
     </blockquote>
 
     <h2 id="available"><span class="sigil">§2</span>Available recipes</h2>
+    <p>
+      Five recipes ship today, covering transport, freight, healthcare,
+      customs and financial settlement. Each follows the same shape — a
+      <code>compose<em>X</em>Recipe(...)</code> factory that returns a
+      <code>PayloadInspectorPort</code> the connector wires in ahead of the
+      PDP — so swapping or composing them is mechanical.
+    </p>
     <div class="recipe-grid">
       <article class="recipe-card">
         <header>
@@ -93,8 +101,8 @@
         <p>
           Validates and transports payloads against the
           <a href="https://otm-api-spec.redocly.app/api/5.8/otm" rel="noopener">OTM 5.8 specification</a>.
-          The recipe matches <code>application/vnd.otm+json</code> on POST/PUT/PATCH (and <code>application/json</code>
-          when you pin it to a path prefix), structurally validates the body against the pinned OTM 5.8 entity
+          Matches <code>application/vnd.otm+json</code> on POST/PUT/PATCH (and <code>application/json</code>
+          when pinned to a path prefix), structurally validates the body against the pinned OTM 5.8 entity
           surface, and surfaces <code>otm.entityType</code>, <code>otm.id</code>, and <code>otm.version</code>
           as resource tags so your PDP can authorise on them.
         </p>
@@ -137,6 +145,141 @@ const con = composeCon({
           <a href="https://www.npmjs.com/package/@transportial/recipe-otm">npm</a>
           ·
           <a href="https://otm-api-spec.redocly.app/api/5.8/otm" rel="noopener">OTM 5.8 spec</a>
+        </p>
+      </article>
+
+      <article class="recipe-card">
+        <header>
+          <span class="recipe-domain">Freight · EU regulation</span>
+          <span class="recipe-version">v0.1.0</span>
+        </header>
+        <h3 id="efti">@transportial/recipe-efti</h3>
+        <p class="recipe-tagline">eFTI 1.0 — EU electronic Freight Transport Information</p>
+        <p>
+          Validates and transports payloads against the eFTI common dataset
+          for cross-border road transport, aligned with
+          <a href="https://eur-lex.europa.eu/eli/reg/2020/1056/oj" rel="noopener">Regulation (EU) 2020/1056</a>
+          and the implementing acts that fix the data subset. Matches
+          <code>application/vnd.efti+json</code>, validates the
+          <code>eftiType</code> discriminator and per-entity required fields
+          (sender + consignee on consignments, occurrence time on transport
+          events, UN number on dangerous goods), and surfaces
+          <code>efti.entityType</code>, <code>efti.id</code> and
+          <code>efti.version</code> as resource tags.
+        </p>
+        <pre><code>import { composeEftiRecipe } from '@transportial/recipe-efti';
+
+const efti = composeEftiRecipe({ pathPrefixes: ['/efti'] });
+// pass efti.inspectors into composeCon(...)</code></pre>
+        <p class="recipe-links">
+          <a href="https://github.com/Transportial/basic-data-infrastructure/tree/main/packages/recipe-efti">Source</a>
+          ·
+          <a href="https://www.npmjs.com/package/@transportial/recipe-efti">npm</a>
+          ·
+          <a href="https://eur-lex.europa.eu/eli/reg/2020/1056/oj" rel="noopener">Regulation (EU) 2020/1056</a>
+        </p>
+      </article>
+
+      <article class="recipe-card">
+        <header>
+          <span class="recipe-domain">Healthcare · HL7</span>
+          <span class="recipe-version">v0.1.0</span>
+        </header>
+        <h3 id="fhir-r5">@transportial/recipe-fhir-r5</h3>
+        <p class="recipe-tagline">FHIR R5 — clinical referrals + patient summary</p>
+        <p>
+          Validates and transports
+          <a href="https://hl7.org/fhir/R5/" rel="noopener">FHIR R5</a> resources
+          relevant to clinical referral pathways and patient-summary exchange
+          between care providers (ServiceRequest, Composition, Bundle,
+          Patient, Encounter, Condition, Observation, MedicationRequest, …).
+          Matches <code>application/fhir+json</code> (with the
+          <code>fhirVersion</code> media-type parameter recognised), checks
+          the FHIR <code>id</code> pattern when present, and surfaces
+          <code>fhir.resourceType</code>, <code>fhir.id</code> and
+          <code>fhir.version</code> as resource tags. The R5 rule that
+          <code>id</code> is server-assigned on create is honoured — the
+          inspector simply omits the id tag when no id is sent.
+        </p>
+        <pre><code>import { composeFhirR5Recipe } from '@transportial/recipe-fhir-r5';
+
+const fhir = composeFhirR5Recipe({ pathPrefixes: ['/fhir'] });
+// pass fhir.inspectors into composeCon(...)</code></pre>
+        <p class="recipe-links">
+          <a href="https://github.com/Transportial/basic-data-infrastructure/tree/main/packages/recipe-fhir-r5">Source</a>
+          ·
+          <a href="https://www.npmjs.com/package/@transportial/recipe-fhir-r5">npm</a>
+          ·
+          <a href="https://hl7.org/fhir/R5/" rel="noopener">HL7 FHIR R5</a>
+        </p>
+      </article>
+
+      <article class="recipe-card">
+        <header>
+          <span class="recipe-domain">Customs · Multimodal</span>
+          <span class="recipe-version">v0.1.0</span>
+        </header>
+        <h3 id="mmt-rsm">@transportial/recipe-mmt-rsm</h3>
+        <p class="recipe-tagline">UN/CEFACT MMT-RSM — multimodal transport reference semantic model</p>
+        <p>
+          Validates and transports payloads aligned with the
+          <a href="https://unece.org/trade/uncefact" rel="noopener">UN/CEFACT</a>
+          Buy-Ship-Pay reference data model, scoped to the MMT (multimodal
+          transport) subset used for customs and shipping. Matches
+          <code>application/vnd.uncefact.mmt-rsm+json</code>, validates the
+          <code>entityType</code> discriminator across consignment,
+          customsDeclaration, transportMovement, transportDocument, party,
+          goodsItem, equipment and friends, and surfaces
+          <code>mmt-rsm.entityType</code>, <code>mmt-rsm.id</code> and
+          <code>mmt-rsm.version</code> as resource tags.
+        </p>
+        <pre><code>import { composeMmtRsmRecipe } from '@transportial/recipe-mmt-rsm';
+
+const mmt = composeMmtRsmRecipe({ pathPrefixes: ['/customs'] });
+// pass mmt.inspectors into composeCon(...)</code></pre>
+        <p class="recipe-links">
+          <a href="https://github.com/Transportial/basic-data-infrastructure/tree/main/packages/recipe-mmt-rsm">Source</a>
+          ·
+          <a href="https://www.npmjs.com/package/@transportial/recipe-mmt-rsm">npm</a>
+          ·
+          <a href="https://unece.org/trade/uncefact" rel="noopener">UN/CEFACT</a>
+        </p>
+      </article>
+
+      <article class="recipe-card">
+        <header>
+          <span class="recipe-domain">Finance · Settlement</span>
+          <span class="recipe-version">v0.1.0</span>
+        </header>
+        <h3 id="iso20022-pacs008">@transportial/recipe-iso20022-pacs008</h3>
+        <p class="recipe-tagline">ISO 20022 pacs.008 — FI-to-FI customer credit transfer</p>
+        <p>
+          Validates and transports
+          <a href="https://www.iso20022.org/" rel="noopener">ISO 20022</a>
+          <code>pacs.008.001.10</code> messages — the canonical financial
+          settlement message along a trade-finance chain. Matches
+          <code>application/vnd.iso20022+json</code>, structurally validates
+          the
+          <code>Document → FIToFICstmrCdtTrf → GrpHdr + CdtTrfTxInf</code>
+          envelope (<code>MsgId</code>, <code>CreDtTm</code>,
+          <code>NbOfTxs</code>, <code>SttlmInf</code>; per-tx <code>PmtId</code>,
+          <code>IntrBkSttlmAmt</code>, <code>ChrgBr</code>, <code>Dbtr</code>,
+          <code>DbtrAgt</code>, <code>Cdtr</code>, <code>CdtrAgt</code>),
+          and surfaces <code>iso20022.message</code>,
+          <code>iso20022.msgId</code>, <code>iso20022.txCount</code>, and
+          (when present) <code>iso20022.endToEndId</code> as resource tags so
+          policies can authorise on the underlying payment.
+        </p>
+        <pre><code>import { composePacs008Recipe } from '@transportial/recipe-iso20022-pacs008';
+
+const pacs008 = composePacs008Recipe({ pathPrefixes: ['/payments'] });
+// pass pacs008.inspectors into composeCon(...)</code></pre>
+        <p class="recipe-links">
+          <a href="https://github.com/Transportial/basic-data-infrastructure/tree/main/packages/recipe-iso20022-pacs008">Source</a>
+          ·
+          <a href="https://www.npmjs.com/package/@transportial/recipe-iso20022-pacs008">npm</a>
+          ·
+          <a href="https://www.iso20022.org/" rel="noopener">ISO 20022</a>
         </p>
       </article>
     </div>
@@ -182,13 +325,15 @@ class FhirBundleInspector implements PayloadInspectorPort {
     <h2><span class="sigil">§4</span>Roadmap</h2>
     <p>
       Recipes are deliberately a thin layer — the value comes from breadth.
-      The packages we expect to ship next, ordered by demand we've heard:
+      The five recipes above cover transport (OTM, eFTI, MMT-RSM), healthcare
+      (FHIR R5), and financial settlement (ISO 20022 pacs.008). Adjacent
+      shapes we'd like to add next, demand permitting:
     </p>
     <ul>
-      <li><strong>eFTI</strong> — EU electronic Freight Transport Information for cross-border road transport.</li>
-      <li><strong>FHIR R5</strong> — clinical referral pathways and patient-summary exchange between care providers.</li>
-      <li><strong>UN/CEFACT MMT-RSM</strong> — multimodal transport reference semantic model, for customs and shipping.</li>
-      <li><strong>ISO 20022 pacs.008</strong> — financial settlement messages along a trade-finance chain.</li>
+      <li><strong>DCSA</strong> Track &amp; Trace and eBL — Digital Container Shipping Association events and electronic bills of lading.</li>
+      <li><strong>EDI X12 / EDIFACT</strong> bridges — for parties that still ship structured EDI alongside JSON.</li>
+      <li><strong>ENTSO-E / EBIX</strong> — European energy-market message profiles for grid balancing and metering.</li>
+      <li><strong>SBDH-wrapped UBL</strong> — for Peppol-style document exchange where the wrapper carries the routing.</li>
     </ul>
     <p>
       If you're building one of these and want to coordinate, open an issue on

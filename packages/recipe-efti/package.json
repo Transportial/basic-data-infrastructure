@@ -1,0 +1,56 @@
+{
+  "name": "@transportial/recipe-efti",
+  "version": "0.1.0",
+  "description": "eFTI 1.0 (EU electronic Freight Transport Information) recipe for the BDI Connector — validates and transports eFTI payloads for cross-border road transport.",
+  "license": "LicenseRef-PolyForm-Shield-1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@transportial/con": "workspace:*",
+    "@transportial/kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "tsup": "^8.3.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Transportial/basic-data-infrastructure.git",
+    "directory": "packages/recipe-efti"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

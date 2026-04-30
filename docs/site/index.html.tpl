@@ -246,7 +246,7 @@ bun run --filter '@transportial/con' dev</code></pre>
     <div class="cards">
       <a class="card" href="recipes.html">
         <h3>Domain recipes →</h3>
-        <p>Optional add-ons that teach the connector about real data shapes — OTM 5.8 for transport today, eFTI / FHIR / ISO 20022 on the roadmap. Validate, tag, and route domain payloads without putting a schema in your backend.</p>
+        <p>Optional add-ons that teach the connector about real data shapes — OTM 5.8, eFTI, FHIR R5, UN/CEFACT MMT-RSM, and ISO 20022 pacs.008 ship today. Validate, tag, and route domain payloads without putting a schema in your backend.</p>
       </a>
       <a class="card" href="interactive/">
         <h3>Interactive explorer →</h3>
