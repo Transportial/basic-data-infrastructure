@@ -249,7 +249,7 @@
       "name": "@transportial/recipe-efti",
       "version": "0.1.0",
       "dependencies": {
-        "@transportial/con": "workspace:*",
+        "@transportial/contracts": "workspace:*",
         "@transportial/kernel": "workspace:*",
       },
       "devDependencies": {
@@ -261,7 +261,7 @@
       "name": "@transportial/recipe-fhir-r5",
       "version": "0.1.0",
       "dependencies": {
-        "@transportial/con": "workspace:*",
+        "@transportial/contracts": "workspace:*",
         "@transportial/kernel": "workspace:*",
       },
       "devDependencies": {
@@ -273,7 +273,7 @@
       "name": "@transportial/recipe-iso20022-pacs008",
       "version": "0.1.0",
       "dependencies": {
-        "@transportial/con": "workspace:*",
+        "@transportial/contracts": "workspace:*",
         "@transportial/kernel": "workspace:*",
       },
       "devDependencies": {
@@ -285,7 +285,7 @@
       "name": "@transportial/recipe-mmt-rsm",
       "version": "0.1.0",
       "dependencies": {
-        "@transportial/con": "workspace:*",
+        "@transportial/contracts": "workspace:*",
         "@transportial/kernel": "workspace:*",
       },
       "devDependencies": {
@@ -297,7 +297,7 @@
       "name": "@transportial/recipe-otm",
       "version": "0.1.0",
       "dependencies": {
-        "@transportial/con": "workspace:*",
+        "@transportial/contracts": "workspace:*",
         "@transportial/kernel": "workspace:*",
       },
       "devDependencies": {

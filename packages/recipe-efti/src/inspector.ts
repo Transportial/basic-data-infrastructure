@@ -5,7 +5,7 @@ import type {
   PayloadInspectionRequest,
   PayloadInspectionResult,
   PayloadInspectorPort,
-} from '@transportial/con';
+} from '@transportial/contracts';
 import type { EftiValidator } from './validator.ts';
 import { MinimalEftiValidator } from './validator.ts';
 

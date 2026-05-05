@@ -20,7 +20,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@transportial/con": "workspace:*",
+    "@transportial/contracts": "workspace:*",
     "@transportial/kernel": "workspace:*"
   },
   "devDependencies": {

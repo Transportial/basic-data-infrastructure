@@ -7,3 +7,4 @@ export * from './tokens/bvod.ts';
 export * from './tokens/trustlist.ts';
 export * from './events/envelope.ts';
 export * from './oauth/client-credentials.ts';
+export * from './connector/inspector.ts';

@@ -22,6 +22,23 @@ export async function sha256Hex(input: string): Promise<string> {
   return hex;
 }
 
+// Always-success verification source for live demos and local exploration.
+// Reports as 'KvK' (the VerificationSource.name union is closed) so that the
+// emitted evidence is structurally indistinguishable from a real KvK probe.
+// Never wire this in production — it is gated behind DEMO_MODE=1 in bin.ts.
+export class DemoVerificationSource implements VerificationSource {
+  readonly name = 'KvK' as const;
+  async verify(input: { euid: Euid; legal_name: string }): Promise<{
+    outcome: 'success' | 'failure' | 'partial';
+    evidence_hash: string;
+  }> {
+    return {
+      outcome: 'success',
+      evidence_hash: await sha256Hex(`demo:${input.euid}:${input.legal_name}`),
+    };
+  }
+}
+
 // KvK "Basisprofiel v2" adapter. The integrator provides the API key and base
 // URL; we keep only an evidence hash, not the PII-bearing raw response.
 export class KvkVerificationSource implements VerificationSource {

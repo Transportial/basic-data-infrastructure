@@ -3,11 +3,22 @@
 // Copyright (C) 2026 Transportial and contributors
 
 import { createServer } from './server.ts';
+import { DemoVerificationSource } from './infrastructure/verification-sources.ts';
+import type { AsrConfig } from './composition-root.ts';
 
 const port = Number(process.env.PORT ?? 8080);
 const issuer = process.env.ASR_ISSUER ?? `http://localhost:${port}`;
+const associationId = process.env.ASSOCIATION_ID;
+const demoMode = process.env.DEMO_MODE === '1';
 
-const { fetch } = await createServer({ port, issuer });
+const config: AsrConfig & { port: number } = {
+  port,
+  issuer,
+  ...(associationId ? { associationId } : {}),
+  ...(demoMode ? { verificationSources: [new DemoVerificationSource()] } : {}),
+};
+
+const { fetch } = await createServer(config);
 
 const bunRuntime = (globalThis as unknown as { Bun?: { serve: (opts: { port: number; fetch: (req: Request) => Promise<Response> }) => unknown } }).Bun;
 
@@ -49,4 +60,4 @@ if (bunRuntime) {
   server.listen(port);
 }
 
-console.log(JSON.stringify({ level: 'info', msg: 'ASR listening', port, issuer }));
+console.log(JSON.stringify({ level: 'info', msg: 'ASR listening', port, issuer, demoMode }));

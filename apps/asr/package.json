@@ -40,8 +40,8 @@
   },
   "scripts": {
     "build": "tsup",
-    "dev": "bun run --watch ./src/server.ts",
-    "start": "bun run ./src/server.ts",
+    "dev": "bun run --watch ./src/bin.ts",
+    "start": "bun run ./src/bin.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",

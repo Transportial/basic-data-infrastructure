@@ -5,7 +5,7 @@ import type {
   PayloadInspectionRequest,
   PayloadInspectionResult,
   PayloadInspectorPort,
-} from '@transportial/con';
+} from '@transportial/contracts';
 import type { FhirR5Validator } from './validator.ts';
 import { MinimalFhirR5Validator } from './validator.ts';
 

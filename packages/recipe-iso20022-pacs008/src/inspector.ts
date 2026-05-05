@@ -5,7 +5,7 @@ import type {
   PayloadInspectionRequest,
   PayloadInspectionResult,
   PayloadInspectorPort,
-} from '@transportial/con';
+} from '@transportial/contracts';
 import type { Pacs008Validator } from './validator.ts';
 import { MinimalPacs008Validator } from './validator.ts';
 
