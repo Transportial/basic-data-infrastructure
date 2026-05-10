@@ -21,11 +21,13 @@ export function App({ client, associationId }: AppProps): JSX.Element {
       const fd = new FormData(form);
       setError(null);
       try {
+        const vat = fd.get('vat_number');
+        const lei = fd.get('lei');
         const result = await client.startOnboarding({
           euid: String(fd.get('euid')),
           legal_name: String(fd.get('legal_name')),
-          vat_number: fd.get('vat_number') ? String(fd.get('vat_number')) : undefined,
-          lei: fd.get('lei') ? String(fd.get('lei')) : undefined,
+          ...(vat ? { vat_number: String(vat) } : {}),
+          ...(lei ? { lei: String(lei) } : {}),
           signing_representative: {
             subject_id: String(fd.get('representative') ?? 'self'),
             auth_source: 'manual',
@@ -63,59 +65,76 @@ export function App({ client, associationId }: AppProps): JSX.Element {
   );
 
   return (
-    <main style={{ fontFamily: 'sans-serif', maxWidth: 720, margin: '2rem auto' }}>
-      <h1>BDI onboarding — association {associationId}</h1>
+    <main className="t-app">
+      <header className="t-header">
+        <small className="t-caption">BDI · Onboarding</small>
+        <h1>Join association {associationId}</h1>
+        <p className="t-muted">
+          Register your organisation, run identity verifications, and fetch the public descriptor of any member.
+        </p>
+      </header>
+
       {error !== null && (
-        <div role="alert" style={{ background: '#fee', padding: '0.5rem', marginBottom: 16 }}>
+        <div role="alert" className="t-alert">
           {error}
         </div>
       )}
-      <form onSubmit={onSubmit}>
-        <label>
-          EUID (e.g. NL.NHR.12345678){' '}
-          <input name="euid" required aria-label="euid" />
-        </label>
-        <br />
-        <label>
-          Legal name <input name="legal_name" required aria-label="legal name" />
-        </label>
-        <br />
-        <label>
-          VAT number (optional) <input name="vat_number" aria-label="vat" />
-        </label>
-        <br />
-        <label>
-          LEI (optional) <input name="lei" aria-label="lei" />
-        </label>
-        <br />
-        <label>
-          Signing representative <input name="representative" aria-label="representative" />
-        </label>
-        <br />
-        <button type="submit">Start onboarding</button>
-      </form>
 
-      {memberId !== null && (
-        <section>
-          <p>Draft member created — id {memberId}</p>
-          <button onClick={() => void onVerify()}>Run verifications</button>
-        </section>
-      )}
+      <section className="t-section">
+        <h2>Onboard organisation</h2>
+        <form className="t-form" onSubmit={onSubmit}>
+          <label className="t-field">
+            EUID
+            <input name="euid" required aria-label="euid" placeholder="NL.NHR.12345678" />
+          </label>
+          <label className="t-field">
+            Legal name
+            <input name="legal_name" required aria-label="legal name" placeholder="Acme B.V." />
+          </label>
+          <label className="t-field">
+            VAT number <span className="t-muted">(optional)</span>
+            <input name="vat_number" aria-label="vat" placeholder="NL000000000B00" />
+          </label>
+          <label className="t-field">
+            LEI <span className="t-muted">(optional)</span>
+            <input name="lei" aria-label="lei" placeholder="529900T8BM49AURSDO55" />
+          </label>
+          <label className="t-field">
+            Signing representative
+            <input name="representative" aria-label="representative" placeholder="alice@acme.eu" />
+          </label>
+          <button type="submit" className="t-btn">Start onboarding</button>
+        </form>
 
-      <section>
+        {memberId !== null && (
+          <div className="t-row" style={{ marginTop: '1.5rem' }}>
+            <span className="t-pill" data-status="draft">Draft</span>
+            <span className="t-muted">Member id <strong>{memberId}</strong></span>
+            <button className="t-btn t-btn-secondary" onClick={() => void onVerify()}>
+              Run verifications
+            </button>
+          </div>
+        )}
+      </section>
+
+      <section className="t-section">
         <h2>Public descriptor lookup</h2>
         <form
+          className="t-form"
           onSubmit={(e) => {
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
             void onFetchDescriptor(String(fd.get('lookup')));
           }}
         >
-          <input name="lookup" placeholder="NL.NHR.12345678" aria-label="lookup" />
-          <button type="submit">Look up</button>
+          <label className="t-field">
+            EUID
+            <input name="lookup" placeholder="NL.NHR.12345678" aria-label="lookup" />
+          </label>
+          <button type="submit" className="t-btn">Look up</button>
         </form>
         {descriptor !== null && (
-          <pre style={{ background: '#f6f6f6', padding: '1rem', overflow: 'auto' }}>{descriptor}</pre>
+          <pre style={{ marginTop: '1.5rem' }}>{descriptor}</pre>
         )}
       </section>
     </main>

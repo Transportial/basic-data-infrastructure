@@ -73,19 +73,26 @@ export function App({ client, associationId, actorEuid }: AppProps): JSX.Element
   };
 
   return (
-    <main style={{ fontFamily: 'sans-serif', maxWidth: 960, margin: '2rem auto' }}>
-      <h1>BDI Orkestratie Register — admin ({associationId})</h1>
+    <main className="t-app">
+      <header className="t-header">
+        <small className="t-caption">BDI · Orkestratie Register</small>
+        <h1>Admin portal</h1>
+        <p className="t-muted">
+          Association <strong>{associationId}</strong> · acting as <strong>{actorEuid}</strong>
+        </p>
+      </header>
+
       {error !== null && (
-        <div role="alert" style={{ background: '#fee', padding: '0.5rem', marginBottom: 16 }}>
+        <div role="alert" className="t-alert">
           {error}
         </div>
       )}
 
-      <section>
+      <section className="t-section">
         <h2>Create chain context</h2>
-        <form onSubmit={createCtx}>
-          <label>
-            Kind:{' '}
+        <form className="t-form" onSubmit={createCtx}>
+          <label className="t-field">
+            Kind
             <select name="kind" aria-label="kind">
               <option value="shipment">shipment</option>
               <option value="order">order</option>
@@ -93,49 +100,76 @@ export function App({ client, associationId, actorEuid }: AppProps): JSX.Element
               <option value="custom">custom</option>
             </select>
           </label>
-          <button type="submit">Create</button>
+          <button type="submit" className="t-btn">Create</button>
         </form>
       </section>
 
       {context !== null && (
         <>
-          <section>
-            <h2>Context {context.id}</h2>
-            <p>Status: {context.status}</p>
-            <p>Kind: {context.kind}</p>
+          <section className="t-section">
+            <div className="t-row" style={{ justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <h2 style={{ margin: 0 }}>Context</h2>
+              <span className="t-pill" data-status={context.status}>{context.status}</span>
+            </div>
+            <p className="t-muted" style={{ marginTop: 0 }}>
+              <strong>{context.id}</strong> — kind {context.kind}
+            </p>
+
             <h3>Parties</h3>
-            <ul>
-              {context.parties.map((p) => (
-                <li key={p.member_euid}>
-                  {p.member_euid} — {p.roles.join(', ')}
-                </li>
-              ))}
-            </ul>
-            <form onSubmit={addParty}>
-              <input name="member_euid" placeholder="NL.NHR.22222222" aria-label="member_euid" />
-              <input name="roles" placeholder="carrier,consignee" aria-label="roles" />
-              <button type="submit">Add party</button>
+            {context.parties.length === 0 ? (
+              <p className="t-muted">No parties yet.</p>
+            ) : (
+              <ul className="t-stack" style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
+                {context.parties.map((p) => (
+                  <li key={p.member_euid} className="t-row" style={{ justifyContent: 'space-between' }}>
+                    <strong>{p.member_euid}</strong>
+                    <span className="t-muted">{p.roles.join(', ')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <form className="t-form" onSubmit={addParty}>
+              <label className="t-field">
+                Member EUID
+                <input name="member_euid" placeholder="NL.NHR.22222222" aria-label="member_euid" />
+              </label>
+              <label className="t-field">
+                Roles
+                <input name="roles" placeholder="carrier, consignee" aria-label="roles" />
+              </label>
+              <button type="submit" className="t-btn">Add party</button>
             </form>
           </section>
 
-          <section>
+          <section className="t-section">
             <h2>Publish event</h2>
-            <form onSubmit={publishEvent}>
-              <input name="event_type" placeholder="eta_updated" aria-label="event_type" />
-              <input name="payload" placeholder="payload string" aria-label="payload" />
-              <button type="submit">Publish</button>
+            <form className="t-form" onSubmit={publishEvent}>
+              <label className="t-field">
+                Event type
+                <input name="event_type" placeholder="eta_updated" aria-label="event_type" />
+              </label>
+              <label className="t-field">
+                Payload
+                <input name="payload" placeholder="payload string" aria-label="payload" />
+              </label>
+              <button type="submit" className="t-btn">Publish</button>
             </form>
           </section>
         </>
       )}
 
-      <section>
+      <section className="t-section">
         <h2>Activity</h2>
-        <ul>
-          {log.map((l, i) => (
-            <li key={i}>{l}</li>
-          ))}
-        </ul>
+        {log.length === 0 ? (
+          <p className="t-muted">Nothing logged yet.</p>
+        ) : (
+          <ul className="t-log">
+            {log.map((l, i) => (
+              <li key={i}>{l}</li>
+            ))}
+          </ul>
+        )}
       </section>
     </main>
   );
